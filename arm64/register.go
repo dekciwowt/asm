@@ -36,7 +36,6 @@ const /* Register */ (
 	W28
 	W29
 	W30
-	W31
 
 	X0
 	X1
@@ -69,14 +68,6 @@ const /* Register */ (
 	X28
 	X29
 	X30
-	X31
-)
-
-const (
-	FP  Register = X29 // X29, frame pointer
-	LR  Register = X30 // X30, link register
-	WZR Register = W31 // W31, 32-bit zero register
-	XZR Register = X31 // X31, 64-bit zero register
 )
 
 func (r Register) String() string {

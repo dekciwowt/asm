@@ -1,223 +1,161 @@
 package arm64
 
-func b2u(b bool) uint8 {
-	if b {
-		return 1
-	}
-
-	return 0
-}
-
-func ADD(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func ADD(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpADD).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ADDS(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func ADDS(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpADDS).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func SUB(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func SUB(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpSUB).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func SUBS(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func SUBS(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpSUBS).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func AND(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func AND(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpAND).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ANDS(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func ANDS(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpANDS).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ORR(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func ORR(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpORR).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func EOR(rd, rn, rm Register) Instruction {
-	var inst Instruction
+func EOR(rd, rn, rm Register) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
 		WithOpcode(OpEOR).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ADDI(rd, rn Register, imm uint16) Instruction {
-	var inst Instruction
+func ADDI(rd, rn Register, imm uint16) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpADDI).
-		WithImm12(imm).
+		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ADDSI(rd, rn Register, imm uint16) Instruction {
-	var inst Instruction
+func ADDSI(rd, rn Register, imm uint16) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpADDSI).
-		WithImm12(imm).
+		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func SUBI(rd, rn Register, imm uint16) Instruction {
-	var inst Instruction
+func SUBI(rd, rn Register, imm uint16) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpSUBI).
-		WithImm12(imm).
+		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func SUBSI(rd, rn Register, imm uint16) Instruction {
-	var inst Instruction
+func SUBSI(rd, rn Register, imm uint16) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpSUBSI).
-		WithImm12(imm).
+		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ANDI(rd, rn Register, imm uint64) Instruction {
-	var inst Instruction
+func ANDI(rd, rn Register, bitmask uint64) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpANDI).
-		WithBitmask(imm).
+		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ANDSI(rd, rn Register, imm uint64) Instruction {
-	var inst Instruction
+func ANDSI(rd, rn Register, bitmask uint64) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpANDSI).
-		WithBitmask(imm).
+		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func ORRI(rd, rn Register, imm uint64) Instruction {
-	var inst Instruction
+func ORRI(rd, rn Register, bitmask uint64) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpORRI).
-		WithBitmask(imm).
+		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
 }
 
-func EORI(rd, rn Register, imm uint64) Instruction {
-	var inst Instruction
+func EORI(rd, rn Register, bitmask uint64) DPInstruction {
+	var inst DPInstruction
 	return inst.
-		WithSF(b2u(W31 < rd)).
+		WithSF(W30 < rd || W30 < rn).
 		WithOpcode(OpEORI).
-		WithBitmask(imm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-func ADR(rd Register, imm21 int32) Instruction {
-	var inst Instruction
-	return inst.
-		WithSF(0).
-		WithOpcode(OpADR).
-		WithImm21(imm21).
-		WithRd(rd)
-}
-
-func ADRP(rd Register, imm21 int32) Instruction {
-	var inst Instruction
-	return inst.
-		WithSF(1).
-		WithOpcode(OpADR).
-		WithImm21(imm21).
-		WithRd(rd)
-}
-
-func STR(rd, rn, rm Register) Instruction {
-	var inst Instruction
-
-	size := SizeWord
-	if W31 < rd {
-		size = SizeDWord
-	}
-
-	return inst.
-		WithSize(size).
-		WithOpcode(OpSTR).
-		WithOption(OptLSL).
-		WithShift(0).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-func LDR(rd, rn, rm Register) Instruction {
-	var inst Instruction
-
-	size := SizeWord
-	if W31 < rd {
-		size = SizeDWord
-	}
-
-	return inst.
-		WithSize(size).
-		WithOpcode(OpLDR).
-		WithOption(OptLSL).
-		WithShift(0).
-		WithRm(rm).
+		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
 }
