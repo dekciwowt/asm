@@ -35,7 +35,6 @@ func TestDPInstructions(t *testing.T) {
 	tests := InstructionTests[DPInstruction]{
 		// 32-bit (sf=0)
 		{uint32(ADD(W0, W1, W2)), 0x0B020020},
-		{uint32(ADD(W0, W1, W2).WithExtension(ExtUXTX, 0x1)), 0x0B226420},
 		{uint32(ADDS(W0, W1, W2)), 0x2B020020},
 		{uint32(SUB(W0, W1, W2)), 0x4B020020},
 		{uint32(SUBS(W0, W1, W2)), 0x6B020020},
@@ -68,6 +67,44 @@ func TestDPInstructions(t *testing.T) {
 		{uint32(ANDSI(X0, X1, 0xFF)), 0xF2401C20},
 		{uint32(ORRI(X0, X1, 0xFF)), 0xB2401C20},
 		{uint32(EORI(X0, X1, 0xFF)), 0xD2401C20},
+
+		// 32-bit (sf=0)
+		{uint32(ADD(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x0B020420},
+		{uint32(ADDS(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x2B020420},
+		{uint32(SUB(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x4B020420},
+		{uint32(SUBS(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x6B020420},
+		{uint32(AND(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x0A020420},
+		{uint32(ANDS(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x6A020420},
+		{uint32(ORR(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x2A020420},
+		{uint32(EOR(W0, W1, W2).WithShift(ShiftLSL, 0x1)), 0x4A020420},
+		// 64-bit (sf=1)
+		{uint32(ADD(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0x8B020420},
+		{uint32(ADDS(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0xAB020420},
+		{uint32(SUB(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0xCB020420},
+		{uint32(SUBS(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0xEB020420},
+		{uint32(AND(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0x8A020420},
+		{uint32(ANDS(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0xEA020420},
+		{uint32(ORR(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0xAA020420},
+		{uint32(EOR(X0, X1, X2).WithShift(ShiftLSL, 0x1)), 0xCA020420},
+
+		// 32-bit (sf=0)
+		{uint32(ADD(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x0B220420},
+		{uint32(ADDS(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x2B220420},
+		{uint32(SUB(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x4B220420},
+		{uint32(SUBS(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x6B220420},
+		{uint32(AND(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x0A220420},
+		{uint32(ANDS(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x6A220420},
+		{uint32(ORR(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x2A220420},
+		{uint32(EOR(W0, W1, W2).WithExtension(ExtUXTB, 0x1)), 0x4A220420},
+		// 64-bit (sf=1)
+		{uint32(ADD(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0x8B220420},
+		{uint32(ADDS(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0xAB220420},
+		{uint32(SUB(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0xCB220420},
+		{uint32(SUBS(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0xEB220420},
+		{uint32(AND(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0x8A220420},
+		{uint32(ANDS(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0xEA220420},
+		{uint32(ORR(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0xAA220420},
+		{uint32(EOR(X0, X1, X2).WithExtension(ExtUXTB, 0x1)), 0xCA220420},
 	}
 
 	tests.Test(t)
