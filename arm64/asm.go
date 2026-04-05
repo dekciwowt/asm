@@ -325,3 +325,19 @@ func SUBPT(rd, rn, rm Register) DPInstruction {
 		WithRn(rn).
 		WithRd(rd)
 }
+
+func UDIV(rd, rn, rm Register) DPInstruction {
+	return DPInstruction(OpUDIV).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
+		WithRm(rm).
+		WithRn(rn).
+		WithRd(rd)
+}
+
+func SDIV(rd, rn, rm Register) DPInstruction {
+	return DPInstruction(OpSDIV).
+		WithSF(W30 < rd || W30 < rn || W30 < rm).
+		WithRm(rm).
+		WithRn(rn).
+		WithRd(rd)
+}

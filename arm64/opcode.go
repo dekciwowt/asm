@@ -53,36 +53,38 @@ func dpOpcode(opt6, opt5, opt4, opt3, opt2, opt1, sign, oper uint8) DPOpcode {
 }
 
 const (
-	dpCatArithReg    uint8 = 0x0B
-	dpCatLogicReg    uint8 = 0x0A
-	dpCatArithImm    uint8 = 0x11
-	dpCatLogicImm    uint8 = 0x12
-	dpCatArithWCarry uint8 = 0x1A
+	dpCatLogicReg uint8 = 0x0A
+	dpCatArithReg uint8 = 0x0B
+	dpCatArithImm uint8 = 0x11
+	dpCatLogicImm uint8 = 0x12
+	dpCat2xSource uint8 = 0x1A
 )
 
 var (
-	OpADD   = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithReg, 0, 0)    // add
-	OpADDS  = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithReg, 1, 0)    // add, set flags
-	OpSUB   = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithReg, 0, 1)    // subtract
-	OpSUBS  = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithReg, 1, 1)    // subtract, set flags
-	OpAND   = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicReg, 0, 0)    // bitwise AND
-	OpORR   = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicReg, 1, 0)    // bitwise OR
-	OpEOR   = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicReg, 0, 1)    // bitwise XOR
-	OpANDS  = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicReg, 1, 1)    // bitwise AND, set flags
-	OpADDI  = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithImm, 0, 0)    // add with immediate
-	OpADDSI = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithImm, 1, 0)    // add with immediate, set flags
-	OpSUBI  = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithImm, 0, 1)    // subtract with immediate
-	OpSUBSI = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithImm, 1, 1)    // subtract with immediate, set flags
-	OpANDI  = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicImm, 0, 0)    // bitwise AND with immediate
-	OpORRI  = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicImm, 1, 0)    // bitwise OR with immediate
-	OpEORI  = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicImm, 0, 1)    // bitwise XOR with immediate
-	OpANDSI = dpOpcode(0, 0, 0x0, 0, 0, dpCatLogicImm, 1, 1)    // bitwise AND with immediate, set flags
-	OpADC   = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithWCarry, 0, 0) // add with carry
-	OpADCS  = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithWCarry, 1, 0) // add with carry, set flags
-	OpSBC   = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithWCarry, 0, 1) // subtract with carry
-	OpSBCS  = dpOpcode(0, 0, 0x0, 0, 0, dpCatArithWCarry, 1, 1) // subtract with carry, set flags
-	OpADDPT = dpOpcode(0, 0, 0x8, 0, 0, dpCatArithWCarry, 0, 0) // add with checked pointer
-	OpSUBPT = dpOpcode(0, 0, 0x8, 0, 0, dpCatArithWCarry, 0, 1) // subtract with checked pointer
+	OpAND   = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicReg, 0, 0) // bitwise AND
+	OpORR   = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicReg, 1, 0) // bitwise OR
+	OpEOR   = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicReg, 0, 1) // bitwise XOR
+	OpANDS  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicReg, 1, 1) // bitwise AND, set flags
+	OpADD   = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithReg, 0, 0) // add
+	OpADDS  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithReg, 1, 0) // add, set flags
+	OpSUB   = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithReg, 0, 1) // subtract
+	OpSUBS  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithReg, 1, 1) // subtract, set flags
+	OpADDI  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithImm, 0, 0) // add with immediate
+	OpADDSI = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithImm, 1, 0) // add with immediate, set flags
+	OpSUBI  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithImm, 0, 1) // subtract with immediate
+	OpSUBSI = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatArithImm, 1, 1) // subtract with immediate, set flags
+	OpANDI  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicImm, 0, 0) // bitwise AND with immediate
+	OpORRI  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicImm, 1, 0) // bitwise OR with immediate
+	OpEORI  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicImm, 0, 1) // bitwise XOR with immediate
+	OpANDSI = dpOpcode(0, 0, 0x0, 0, 0x0, dpCatLogicImm, 1, 1) // bitwise AND with immediate, set flags
+	OpADC   = dpOpcode(0, 0, 0x0, 0, 0x0, dpCat2xSource, 0, 0) // add with carry
+	OpADCS  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCat2xSource, 1, 0) // add with carry, set flags
+	OpSBC   = dpOpcode(0, 0, 0x0, 0, 0x0, dpCat2xSource, 0, 1) // subtract with carry
+	OpSBCS  = dpOpcode(0, 0, 0x0, 0, 0x0, dpCat2xSource, 1, 1) // subtract with carry, set flags
+	OpADDPT = dpOpcode(0, 0, 0x8, 0, 0x0, dpCat2xSource, 0, 0) // add with checked pointer
+	OpSUBPT = dpOpcode(0, 0, 0x8, 0, 0x0, dpCat2xSource, 0, 1) // subtract with checked pointer
+	OpUDIV  = dpOpcode(0, 0, 0x2, 0, 0x6, dpCat2xSource, 0, 0) // unsigned divide
+	OpSDIV  = dpOpcode(0, 0, 0x3, 0, 0x6, dpCat2xSource, 0, 0) // signed divide
 )
 
 var dpOpcodes = map[DPOpcode]string{
@@ -108,6 +110,8 @@ var dpOpcodes = map[DPOpcode]string{
 	OpSBCS:  "SBCS",
 	OpADDPT: "ADDPT",
 	OpSUBPT: "SUBPT",
+	OpUDIV:  "UDIV",
+	OpSDIV:  "SDIV",
 }
 
 func (o DPOpcode) String() string {

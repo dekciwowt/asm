@@ -212,27 +212,19 @@ func (i DPInstruction) WithSF(flag bool) DPInstruction {
 }
 
 func (i DPInstruction) Opcode() DPOpcode {
-	var mask uint32
+	oper := get[uint8](i, dpOpcodeOperMask, dpOpcodeOperPos)
+	sign := get[uint8](i, dpOpcodeSignMask, dpOpcodeSignPos)
 
 	switch cat := get[uint8](i, dpOpcodeMask, dpOpcodePos); cat {
-	case dpCatArithReg, dpCatLogicReg:
-		mask = (sfMask << sfPos) | (dpShiftMask << dpShiftPos) |
-			(dpExtMask << dpExtPos) | (rmMask << rmPos) |
-			(dpImm6Mask << dpImm6Pos) | (rnMask << rnPos) |
-			(rmMask << rmPos)
+	case dpCat2xSource:
+		opt2 := get[uint8](i, dpOpcodeOpt2Mask, dpOpcodeOpt2Pos)
+		opt4 := get[uint8](i, dpOpcodeOpt4Mask, dpOpcodeOpt4Pos)
 
-	case dpCatArithImm, dpCatLogicImm:
-		mask = (sfMask << sfPos) | (dpShiftMask << dpShiftPos) |
-			(dpImm12Mask << dpImm6Pos) | (rnMask << rnPos) |
-			(rmMask << rmPos)
+		return dpOpcode(0, 0, opt4, 0, opt2, cat, sign, oper)
 
-	case dpCatArithWCarry:
-		mask = (sfMask << sfPos) | (dpShiftMask << dpShiftPos) |
-			(rmMask << rmPos) | (dpImm3Mask << dpImm3Pos) |
-			(rnMask << rnPos) | (rmMask << rmPos)
+	default:
+		return dpOpcode(0, 0, 0, 0, 0, cat, sign, oper)
 	}
-
-	return DPOpcode(uint32(i) & ^mask)
 }
 
 // Immediate returns the 12-bit unsigned immediate
@@ -402,7 +394,7 @@ func (i DPInstruction) String() string {
 	case dpCatLogicImm:
 		fmt.Fprintf(&b, "#%#X", i.Bitmask())
 
-	case dpCatArithWCarry:
+	case dpCat2xSource:
 		// plain register form
 		fmt.Fprintf(&b, "%s", i.Rm())
 

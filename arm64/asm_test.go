@@ -112,6 +112,11 @@ func TestDPInstructions(t *testing.T) {
 		// 64-bit (sf=1)
 		{uint32(ADDPT(X0, X1, X2)), 0x9A022020},
 		{uint32(SUBPT(X0, X1, X2)), 0xDA022020},
+
+		// 32-bit (sf=0)
+		{uint32(UDIV(W0, W1, W2)), 0x1AC20820},
+		// 64-bit (sf=1)
+		{uint32(UDIV(X0, X1, X2)), 0x9AC20820},
 	}
 
 	tests.Test(t)
