@@ -6,151 +6,6 @@ import (
 	"strings"
 )
 
-// DPOpcode represents a 7-bit Data Processing opcode.
-//
-// The opcode is split into two sub-fields:
-//
-//	7-6     5-0
-//	+------+----------+
-//	|  op  |  opcode  |
-//	+------+----------+
-//
-// The op field (bits 6–5) encodes the operation variant and flag set:
-//
-//	00 – add family operation
-//	01 – add family operation, set flags
-//	10 – sub family operation
-//	11 – sub family operation, set flags
-//
-// The opcode field (bits 4–0) identifies the instruction family:
-//
-//	01011 – add/substract (ADD, ADDS, SUB, SUBS)
-//	01010 – logical  (AND, ORR, EOR, ANDS)
-//	10001 – add/substract with immediate (ADDI, ADDSI, SUBI, SUBSI)
-//	10010 – logical with immediate (ANDI, ORRI, EORI, ANDSI)
-//	11010 – add/substract with carry (ADDC, ADDCS, SBC, SBCS)
-type DPOpcode uint8
-
-const /* DPOpcode */ (
-	OpADD   DPOpcode = 0x0B // op=00 opcode=01011 – add
-	OpADDS  DPOpcode = 0x2B // op=01 opcode=01011 – add, set flags
-	OpSUB   DPOpcode = 0x4B // op=10 opcode=01011 – subtract
-	OpSUBS  DPOpcode = 0x6B // op=11 opcode=01011 – subtract, set flags
-	OpAND   DPOpcode = 0x0A // op=00 opcode=01010 – bitwise AND
-	OpORR   DPOpcode = 0x2A // op=01 opcode=01010 – bitwise OR
-	OpEOR   DPOpcode = 0x4A // op=10 opcode=01010 – bitwise XOR
-	OpANDS  DPOpcode = 0x6A // op=11 opcode=01010 – bitwise AND, set flags
-	OpADDI  DPOpcode = 0x11 // op=00 opcode=10001 – add with immediate
-	OpADDSI DPOpcode = 0x31 // op=01 opcode=10001 – add with immediate, set flags
-	OpSUBI  DPOpcode = 0x51 // op=10 opcode=10001 – subtract with immediate
-	OpSUBSI DPOpcode = 0x71 // op=11 opcode=10001 – subtract with immediate, set flags
-	OpANDI  DPOpcode = 0x12 // op=00 opcode=10010 – bitwise AND with immediate
-	OpANDSI DPOpcode = 0x72 // op=11 opcode=10010 – bitwise AND with immediate, set flags
-	OpORRI  DPOpcode = 0x32 // op=01 opcode=10010 – bitwise OR with immediate
-	OpEORI  DPOpcode = 0x52 // op=10 opcode=10010 – bitwise XOR with immediate
-	OpADC   DPOpcode = 0x1A // op=00 opcode=11010 – add with carry
-	OpADCS  DPOpcode = 0x3A // op=01 opcode=11010 – add with carry, set flags
-	OpSBC   DPOpcode = 0x5A // op=10 opcode=11010 – subtract with carry
-	OpSBCS  DPOpcode = 0x7A // op=11 opcode=11010 – subtract with carry, set flags
-)
-
-var dpOpcodes = map[DPOpcode]string{
-	OpADD:   "ADD",
-	OpADDS:  "ADDS",
-	OpSUB:   "SUB",
-	OpSUBS:  "SUBS",
-	OpAND:   "AND",
-	OpORR:   "ORR",
-	OpEOR:   "EOR",
-	OpANDS:  "ANDS",
-	OpADDI:  "ADD",
-	OpADDSI: "ADDS",
-	OpSUBI:  "SUB",
-	OpSUBSI: "SUBS",
-	OpANDI:  "AND",
-	OpANDSI: "ANDS",
-	OpORRI:  "ORR",
-	OpEORI:  "EOR",
-	OpADC:   "ADC",
-	OpADCS:  "ADCS",
-	OpSBC:   "SBC",
-	OpSBCS:  "SBCS",
-}
-
-// String returns the canonical ARM64 mnemonic for the opcode.
-// Returns a formatted fallback string if the opcode is not recognized
-func (o DPOpcode) String() string {
-	if name, ok := dpOpcodes[o]; ok {
-		return name
-	}
-
-	return fmt.Sprintf("DPOpcode(%07b)", o)
-}
-
-// Shift represents the shift kind used in shifted-register instructions
-type Shift uint8
-
-const (
-	ShiftLSL Shift = 0x0 // logical shift left
-	ShiftLSR Shift = 0x1 // logical shift right
-	ShiftASR Shift = 0x2 // arithmetic shift right
-)
-
-var shifts = map[Shift]string{
-	ShiftLSL: "lsl",
-	ShiftLSR: "lsr",
-	ShiftASR: "asr",
-}
-
-// String returns the lowercase ARM64 shift mnemonic (lsl, lsr, asr)
-// Returns a formatted fallback string if the shift is not recognized
-func (s Shift) String() string {
-	if name, ok := shifts[s]; ok {
-		return name
-	}
-
-	return fmt.Sprintf("Shift(%#03X)", uint8(s))
-}
-
-// Extension represents the extend/shift option used in extended-register
-// and load/store instructions
-//
-// The UXTW and LSL options are equivalent for 32-bit operands
-// The UXTX and LSL options are equivalent for 64-bit operands
-type Extension uint8
-
-const (
-	ExtUXTB Extension = 0x0 // 000 – zero-extend byte     (8 → 64)
-	ExtUXTH Extension = 0x1 // 001 – zero-extend halfword (16 → 64)
-	ExtUXTW Extension = 0x2 // 010 – zero-extend word     (32 → 64)
-	ExtUXTX Extension = 0x3 // 011 – zero-extend dword 		(64 → 64)
-	ExtSXTB Extension = 0x4 // 100 – sign-extend byte     (8 → 64)
-	ExtSXTH Extension = 0x5 // 101 – sign-extend halfword (16 → 64)
-	ExtSXTW Extension = 0x6 // 110 – sign-extend word     (32 → 64)
-	ExtSXTX Extension = 0x7 // 111 – sign-extend dword		(64 → 64)
-)
-
-var exts = map[Extension]string{
-	ExtUXTB: "uxtb",
-	ExtUXTH: "uxth",
-	ExtUXTW: "uxtw",
-	ExtUXTX: "uxtx",
-	ExtSXTB: "sxtb",
-	ExtSXTH: "sxth",
-	ExtSXTW: "sxtw",
-	ExtSXTX: "sxtx",
-}
-
-// String returns the lowercase ARM64 extension mnemonic (uxtb, sxtw, etc).
-// Returns a formatted fallback string if the extension is not recognized
-func (e Extension) String() string {
-	if name, ok := exts[e]; ok {
-		return name
-	}
-
-	return fmt.Sprintf("Extension(%#03X)", uint8(e))
-}
-
 // Instruction is the type constraint for all ARM64 instruction word types.
 // Every concrete instruction type is a named uint32 with a String method
 type Instruction interface {
@@ -240,70 +95,76 @@ func setRd[I Instruction](inst I, rd Register) I {
 	return set(inst, rd%X0, rdMask, rdPos)
 }
 
-// Operand is the type constraint for raw field values extracted from or
-// written into instruction words
-type Operand interface {
+// operand is the type constraint for raw field values extracted from or written into
+// instruction words
+type operand interface {
 	~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
-// get extracts a field from inst by shifting right by shift and masking
-// with mask
-func get[O Operand, I Instruction](inst I, mask, shift uint32) O {
+// get extracts a field from inst by shifting right by shift and masking with mask
+func get[O, I operand](inst I, mask, shift uint32) O {
 	return O((uint32(inst) >> shift) & mask)
 }
 
-// set writes `op` into instruction at the field defined by mask and shift,
-// clearing any existing bits in that field first
-func set[O Operand, I Instruction](inst I, op O, mask, shift uint32) I {
+// set writes `op` into instruction at the field defined by mask and shift, clearing any
+// existing bits in that field first
+func set[O, I operand](inst I, op O, mask, shift uint32) I {
 	return I((uint32(inst) & ^(mask << shift)) | ((uint32(op) << shift) & (mask << shift)))
 }
 
 // DPInstruction is a 32-bit ARM64 Data Processing instruction word.
 //
 // Four sub-encodings share this type.
-// The caller selects the appropriate accessors based on which
-// sub-encoding the instruction uses:
+// The caller selects the appropriate accessors based on which sub-encoding
+// the instruction uses:
 //
-// With Plain Register:
+// Plain Register:
 //
-//	31     30-24      23-22     21    20-16  15-10            9-5    4-0
-//	+------+----------+---------+-----+------+----------------+------+------+
-//	|  sf  |  opcode  |  000    |  0  |  Rm  |  000000        |  Rn  |  Rd  |
-//	+------+----------+---------+-----+------+----------------+------+------+
+//	31     30     29       28-24      23-22     21    20-16  15-10            9-5    4-0
+//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
+//	|  sf  |  op  |  sign  |  opcode  |  00     |  0  |  Rm  |  000000        |  Rn  |  Rd  |
+//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
 //
-// With Extended Register:
+// Shifted Register:
 //
-//	31     30-24      23-21           20-16  15-13   12-10    9-5    4-0
-//	+------+----------+---------------+------+-------+--------+------+------+
-//	|  sf  |  opcode  |  001          |  Rm  |  opt  |  imm3  |  Rn  |  Rd  |
-//	+------+----------+---------------+------+-------+--------+------+------+
+//	31     30     29       28-24      23-22     21    20-16  15-10            9-5    4-0
+//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
+//	|  sf  |  op  |  sign  |  opcode  |  shift  |  0  |  Rm  |  imm6          |  Rn  |  Rd  |
+//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
 //
-// With Immediate:
+// Extended Register:
 //
-//	31     30-24      23    22        21-10                   9-5    4-0
-//	+------+----------+-----+---------+-----------------------+------+------+
-//	|  sf  |  opcode  |  0  |  shift  |  imm12                |  Rn  |  Rd  |
-//	+------+----------+-----+---------+-----------------------+------+------+
+//	31     30     29       28-24      23-22     21    20-16  15-13   12-10    9-5    4-0
+//	+------+------+--------+----------+---------+-----+------+-------+--------+------+------+
+//	|  sf  |  op  |  sign  |  opcode  |  00     |  1  |  Rm  |  opt  |  imm3  |  Rn  |  Rd  |
+//	+------+------+--------+----------+---------+-----+------+-------+--------+------+------+
 //
-// With Bitmask Immediate:
+// Immediate:
 //
-//	31     30-24      23    22        21-16       15-10       9-5    4-0
-//	+------+----------+-----+---------+-----------+-----------+------+------+
-//	|  sf  |  opcode  |  0  |  N      |  imms     |  immr     |  Rn  |  Rd  |
-//	+------+----------+-----+---------+-----------+-----------+------+------+
+//	31     30     29       28-24      23    22        21-10                   9-5    4-0
+//	+------+------+--------+----------+-----+---------+-----------------------+------+------+
+//	|  sf  |  op  |  sign  |  opcode  |  0  |  shift  |  imm12                |  Rn  |  Rd  |
+//	+------+------+--------+----------+-----+---------+-----------------------+------+------+
 //
-// With Shifted Register:
+// Bitmask Immediate:
 //
-//	31     30-24      23-22     21    20-16  15-10            9-5    4-0
-//	+------+----------+---------+-----+------+----------------+------+------+
-//	|  sf  |  opcode  |  shift  |  0  |  Rm  |  imm6          |  Rn  |  Rd  |
-//	+------+----------+---------+-----+------+----------------+------+------+
+//	31     30     29       28-24      23    22        21-16       15-10       9-5    4-0
+//	+------+------+--------+----------+-----+---------+-----------+-----------+------+------+
+//	|  sf  |  op  |  sign  |  opcode  |  0  |  N      |  imms     |  immr     |  Rn  |  Rd  |
+//	+------+------+--------+----------+-----+---------+-----------+-----------+------+------+
+//
+// Checked Pointer:
+//
+//	31     30     29       28-24      23-21           20-16  15-13   12-10    9-5    4-0
+//	+------+------+--------+----------+---------------+------+-------+--------+------+------+
+//	|  sf  |  op  |  sign  |  opcode  |  000          |  Rm  |  001  |  imm3  |  Rn  |  Rd  |
+//	+------+------+--------+----------+---------------+------+-------+--------+------+------+
 type DPInstruction uint32
 
 // Field sizes, masks and positions for DPInstruction sub-encodings.
 // Fields are shared where their bit positions coincide across sub-encodings
 const (
-	dpOpcodeSize uint32 = 7
+	dpOpcodeSize uint32 = 5
 	dpShiftSize  uint32 = 2
 	dpExtSize    uint32 = 1
 	dpOptSize    uint32 = 3
@@ -350,43 +211,44 @@ func (i DPInstruction) WithSF(flag bool) DPInstruction {
 	return setSF(i, sf)
 }
 
-// Opcode returns the 7-bit Data Processing opcode from bits 30–24
 func (i DPInstruction) Opcode() DPOpcode {
-	return get[DPOpcode](i, dpOpcodeMask, dpOpcodePos)
-}
+	var mask uint32
 
-// WithOpcode encodes opcode into `opcode` field.
-// Returns the updated instruction
-func (i DPInstruction) WithOpcode(opcode DPOpcode) DPInstruction {
-	return set(i, uint8(opcode), dpOpcodeMask, dpOpcodePos)
-}
+	switch cat := get[uint8](i, dpOpcodeMask, dpOpcodePos); cat {
+	case dpCatArithReg, dpCatLogicReg:
+		mask = (sfMask << sfPos) | (dpShiftMask << dpShiftPos) |
+			(dpExtMask << dpExtPos) | (rmMask << rmPos) |
+			(dpImm6Mask << dpImm6Pos) | (rnMask << rnPos) |
+			(rmMask << rmPos)
 
-// Immediate returns the 12-bit unsigned immediate from bits 21–10
-func (i DPInstruction) Immediate() uint16 {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0x11 {
-		log.Fatalf("cannot get immediate due to non arithmetic immediate instruction")
+	case dpCatArithImm, dpCatLogicImm:
+		mask = (sfMask << sfPos) | (dpShiftMask << dpShiftPos) |
+			(dpImm12Mask << dpImm6Pos) | (rnMask << rnPos) |
+			(rmMask << rmPos)
+
+	case dpCatArithWCarry:
+		mask = (sfMask << sfPos) | (dpShiftMask << dpShiftPos) |
+			(rmMask << rmPos) | (dpImm3Mask << dpImm3Pos) |
+			(rnMask << rnPos) | (rmMask << rmPos)
 	}
 
+	return DPOpcode(uint32(i) & ^mask)
+}
+
+// Immediate returns the 12-bit unsigned immediate
+func (i DPInstruction) Immediate() uint16 {
 	return get[uint16](i, dpImm12Mask, dpImm12Pos)
 }
 
 // WithImmediate encodes unsigned immediate into `imm12` field and
 // returns the updated instruction
 func (i DPInstruction) WithImmediate(imm uint16) DPInstruction {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0x11 {
-		log.Fatalf("cannot set immediate due to non arithmetic immediate instruction")
-	}
-
 	return set(i, imm, dpImm12Mask, dpImm12Pos)
 }
 
 // ImmShift decodes the `shift` bit and returns the shift kind and
 // the predefined shift amount
 func (i DPInstruction) ImmShift() (Shift, uint8) {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0x11 {
-		log.Fatalf("cannot get immediate shift due to non arithmetic immediate instruction")
-	}
-
 	if shift := get[uint8](i, dpShiftMask>>1, dpShiftPos); shift == 0x0 {
 		return ShiftLSL, 0
 	}
@@ -396,10 +258,6 @@ func (i DPInstruction) ImmShift() (Shift, uint8) {
 
 // WithImmShift sets the `shift` bit and returns the updated instruction
 func (i DPInstruction) WithImmShift(flag bool) DPInstruction {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0x11 {
-		log.Fatalf("cannot set immediate shift due to non arithmetic immediate instruction")
-	}
-
 	var shift uint8
 	if flag {
 		shift = 1
@@ -411,10 +269,6 @@ func (i DPInstruction) WithImmShift(flag bool) DPInstruction {
 // Bitmask decodes the `N/imms/immr` fields and returns the 64-bit immediate
 // value they represent. Valid only for logical immediate instructions
 func (i DPInstruction) Bitmask() uint64 {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0x12 {
-		log.Fatalf("cannot get bitmask due to non logical immediate instruction")
-	}
-
 	n := get[uint8](i, dpShiftMask>>1, dpShiftPos)
 	imms := get[uint8](i, dpImmsMask, dpImmsPos)
 	immr := get[uint8](i, dpImmrMask, dpImmrPos)
@@ -426,10 +280,6 @@ func (i DPInstruction) Bitmask() uint64 {
 // fields and returns the updated instruction. The `sf` bit must be set before
 // calling this method as it determines whether to use 32 or 64-bit encoding
 func (i DPInstruction) WithBitmask(bitmask uint64) DPInstruction {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0x12 {
-		log.Fatalf("cannot set bitmask due to non logical immediate instruction")
-	}
-
 	n, imms, immr := encodeBitmask(bitmask, i.IsSF())
 
 	i = set(i, n, dpShiftMask>>1, dpShiftPos)
@@ -450,19 +300,9 @@ func (i DPInstruction) WithRm(rm Register) DPInstruction {
 }
 
 // RmShift returns the shift kind (LSL/LSR/ASR) and shift amount for
-// shifted-register instructions. For non shifted-register form
-// instruction method fatals
+// shifted-register instructions
 func (i DPInstruction) RmShift() (Shift, uint8) {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0xA && opcode != 0xB {
-		log.Fatalf("cannot get shift due to non register instruction")
-	}
-
 	shift := get[Shift](i, dpShiftMask, dpShiftPos)
-	ext := get[uint8](i, dpExtMask, dpExtPos)
-	if ext == 1 && shift == 0x0 {
-		log.Fatalf("cannot get shift due to non shifted register instruction")
-	}
-
 	amount := get[uint8](i, dpImm6Mask, dpImm6Pos)
 
 	return shift, amount
@@ -472,10 +312,6 @@ func (i DPInstruction) RmShift() (Shift, uint8) {
 // Sets ext=0, the `shift`, and the shift amount into `imm6` field.
 // Returns the updated instruction
 func (i DPInstruction) WithRmShift(shift Shift, amount uint8) DPInstruction {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0xA && opcode != 0xB {
-		log.Fatalf("cannot set shift due to non register instruction")
-	}
-
 	i = set(i, uint8(0), dpExtMask, dpExtPos)
 	i = set(i, uint8(shift), dpShiftMask, dpShiftPos)
 	i = set(i, amount, dpImm6Mask, dpImm6Pos)
@@ -486,16 +322,6 @@ func (i DPInstruction) WithRmShift(shift Shift, amount uint8) DPInstruction {
 // RmExt returns the extend option and shift amount for extended-register
 // instructions. Valid only for extended-register form instructions
 func (i DPInstruction) RmExt() (Extension, uint8) {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0xA && opcode != 0xB {
-		log.Fatalf("cannot get extension due to non register instruction")
-	}
-
-	shift := get[Shift](i, dpShiftMask, dpShiftPos)
-	ext := get[uint8](i, dpExtMask, dpExtPos)
-	if ext == 0 || shift != 0x0 {
-		log.Fatalf("cannot get shift due to non extended register instruction")
-	}
-
 	opt := get[Extension](i, dpOptMask, dpOptPos)
 	amount := get[uint8](i, dpImm3Mask, dpImm3Pos)
 
@@ -506,10 +332,6 @@ func (i DPInstruction) RmExt() (Extension, uint8) {
 // Sets ext=0, shift=0, the extend option into `opt`, and the shift amount bits
 // into `imm3` field. Returns the updated instruction
 func (i DPInstruction) WithRmExt(option Extension, amount uint8) DPInstruction {
-	if opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode != 0xB {
-		log.Fatalf("cannot set extension due to non arithmetic register instruction")
-	}
-
 	i = set(i, uint8(1), dpExtMask, dpExtPos)
 	i = set(i, uint8(0), dpShiftMask, dpShiftPos)
 	i = set(i, uint8(option), dpOptMask, dpOptPos)
@@ -545,8 +367,8 @@ func (i DPInstruction) String() string {
 
 	fmt.Fprintf(&b, "%s %s, %s, ", i.Opcode(), i.Rd(), i.Rn())
 
-	switch opcode := (uint8(i.Opcode()) >> 0) & 0x1F; opcode {
-	case 0xA, 0xB: // register family
+	switch cat := get[uint8](i, dpOpcodeMask, dpOpcodePos); cat {
+	case dpCatArithReg, dpCatLogicReg:
 		shift := get[Shift](i, dpShiftMask, dpShiftPos)
 		ext := get[uint8](i, dpExtMask, dpExtPos)
 
@@ -556,21 +378,19 @@ func (i DPInstruction) String() string {
 			amount := get[uint8](i, dpImm3Mask, dpImm3Pos)
 
 			fmt.Fprintf(&b, "%s, %s #%#X", i.Rm(), opt, amount)
-
 			break
 		}
 
 		// shifted-register form
 		if amount := get[uint8](i, dpImm6Mask, dpImm6Pos); ext == 0 && amount != 0x0 {
 			fmt.Fprintf(&b, "%s, %s #%#X", i.Rm(), shift, amount)
-
 			break
 		}
 
 		// plain register form
 		fmt.Fprintf(&b, "%s", i.Rm())
 
-	case 0x11: // arithmetic immediate family
+	case dpCatArithImm:
 		// The `shift` bit indicates imm12 << 12 when set
 		if shift := get[uint8](i, dpShiftMask>>1, dpShiftPos); shift == 0 {
 			fmt.Fprintf(&b, "#%#X", i.Immediate())
@@ -579,15 +399,15 @@ func (i DPInstruction) String() string {
 
 		fmt.Fprintf(&b, "#%#X, lsl #12", i.Immediate())
 
-	case 0x12: // logical bitmask immediate family
+	case dpCatLogicImm:
 		fmt.Fprintf(&b, "#%#X", i.Bitmask())
 
-	case 0x1A: // add/substract with carry
+	case dpCatArithWCarry:
 		// plain register form
 		fmt.Fprintf(&b, "%s", i.Rm())
 
 	default:
-		log.Fatalf("[BUG] Must be unreachable. Instruction: DPInstruction(%032b)", i)
+		log.Fatalf("Unknown opcode category: Instruction(%032b)", uint32(i))
 	}
 
 	return b.String()

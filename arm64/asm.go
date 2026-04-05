@@ -16,10 +16,8 @@ package arm64
 //
 //	ADD(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // ADD x0, x1, x2, sxtw #0x2
 func ADD(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpADD).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpADD).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -37,10 +35,8 @@ func ADD(rd, rn, rm Register) DPInstruction {
 //
 //	ADDS(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // ADDS x0, x1, x2, sxtw #0x2
 func ADDS(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpADDS).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpADDS).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -58,10 +54,8 @@ func ADDS(rd, rn, rm Register) DPInstruction {
 //
 //	SUB(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // SUB x0, x1, x2, sxtw #0x2
 func SUB(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpSUB).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpSUB).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -79,10 +73,8 @@ func SUB(rd, rn, rm Register) DPInstruction {
 //
 //	SUBS(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // SUBS x0, x1, x2, sxtw #0x2
 func SUBS(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpSUBS).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpSUBS).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -96,10 +88,8 @@ func SUBS(rd, rn, rm Register) DPInstruction {
 //
 //	AND(X0, X1, X2).WithRmShift(ShiftLSL, 0x4) // AND x0, x1, x2, lsl #0x4
 func AND(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpAND).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpAND).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -113,10 +103,8 @@ func AND(rd, rn, rm Register) DPInstruction {
 //
 //	ANDS(X0, X1, X2).WithRmShift(ShiftLSL, 0x4) // ANDS x0, x1, x2, lsl #0x4
 func ANDS(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpANDS).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpANDS).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -130,10 +118,8 @@ func ANDS(rd, rn, rm Register) DPInstruction {
 //
 //	ORR(X0, X1, X2).WithRmShift(ShiftLSL, 0x4)  // ORR x0, x1, x2, lsl #0x4
 func ORR(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpORR).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpORR).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -147,10 +133,8 @@ func ORR(rd, rn, rm Register) DPInstruction {
 //
 //	EOR(X0, X1, X2).WithRmShift(ShiftLSL, 0x4)  // EOR x0, x1, x2, lsl #0x4
 func EOR(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpEOR).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpEOR).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -164,10 +148,8 @@ func EOR(rd, rn, rm Register) DPInstruction {
 //
 //	ADDI(X0, X1, 0x1).WithImmShift(true)  // ADD X0, X1, #0x1 lsl #12
 func ADDI(rd, rn Register, imm uint16) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpADDI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpADDI).
 		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
@@ -181,10 +163,8 @@ func ADDI(rd, rn Register, imm uint16) DPInstruction {
 //
 //	ADDSI(X0, X1, 0x1).WithImmShift(true)  // ADDS X0, X1, #0x1 lsl #12
 func ADDSI(rd, rn Register, imm uint16) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpADDSI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpADDSI).
 		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
@@ -198,10 +178,8 @@ func ADDSI(rd, rn Register, imm uint16) DPInstruction {
 //
 //	SUBI(X0, X1, 0x1).WithImmShift(true)  // SUB X0, X1, #0x1 lsl #12
 func SUBI(rd, rn Register, imm uint16) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpSUBI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpSUBI).
 		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
@@ -215,10 +193,8 @@ func SUBI(rd, rn Register, imm uint16) DPInstruction {
 //
 //	SUBSI(X0, X1, 0x1).WithImmShift(true)  // SUBS X0, X1, #0x1 lsl #12
 func SUBSI(rd, rn Register, imm uint16) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpSUBSI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpSUBSI).
 		WithImmediate(imm).
 		WithRn(rn).
 		WithRd(rd)
@@ -230,10 +206,8 @@ func SUBSI(rd, rn Register, imm uint16) DPInstruction {
 //
 //	AND <Wd|Xd>, <Wn|Xn>, #bitmask
 func ANDI(rd, rn Register, bitmask uint64) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpANDI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpANDI).
 		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
@@ -245,10 +219,8 @@ func ANDI(rd, rn Register, bitmask uint64) DPInstruction {
 //
 //	ANDS <Wd|Xd>, <Wn|Xn>, #bitmask
 func ANDSI(rd, rn Register, bitmask uint64) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpANDSI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpANDSI).
 		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
@@ -260,10 +232,8 @@ func ANDSI(rd, rn Register, bitmask uint64) DPInstruction {
 //
 //	ORR <Wd|Xd>, <Wn|Xn>, #bitmask
 func ORRI(rd, rn Register, bitmask uint64) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpORRI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpORRI).
 		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
@@ -275,10 +245,8 @@ func ORRI(rd, rn Register, bitmask uint64) DPInstruction {
 //
 //	EOR <Wd|Xd>, <Wn|Xn>, #bitmask
 func EORI(rd, rn Register, bitmask uint64) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpEORI).
 		WithSF(W30 < rd || W30 < rn).
-		WithOpcode(OpEORI).
 		WithBitmask(bitmask).
 		WithRn(rn).
 		WithRd(rd)
@@ -288,10 +256,8 @@ func EORI(rd, rn Register, bitmask uint64) DPInstruction {
 //
 //	ADC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 func ADC(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpADC).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpADC).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -301,10 +267,8 @@ func ADC(rd, rn, rm Register) DPInstruction {
 //
 //	ADCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 func ADCS(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpADCS).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpADCS).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -314,10 +278,8 @@ func ADCS(rd, rn, rm Register) DPInstruction {
 //
 //	SBC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 func SBC(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpSBC).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpSBC).
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)
@@ -327,10 +289,38 @@ func SBC(rd, rn, rm Register) DPInstruction {
 //
 //	SBCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
 func SBCS(rd, rn, rm Register) DPInstruction {
-	var inst DPInstruction
-	return inst.
+	return DPInstruction(OpSBCS).
 		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithOpcode(OpSBCS).
+		WithRm(rm).
+		WithRn(rn).
+		WithRd(rd)
+}
+
+// ADDPT encodes a ADDPT (plain register) instruction
+//
+//	ADDPT <Xd>, <Xn>, <Xm>
+//
+// To encode a shifted-register form, chain WithRmShift after ADDPT:
+//
+//	ADDPT(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // ADDPT x0, x1, x2, lsl #0x3
+func ADDPT(rd, rn, rm Register) DPInstruction {
+	return DPInstruction(OpADDPT).
+		WithSF(true). // only 64-bit registers allowed
+		WithRm(rm).
+		WithRn(rn).
+		WithRd(rd)
+}
+
+// SUBPT encodes a SUBPT (plain register) instruction
+//
+//	SUBPT <Xd>, <Xn>, <Xm>
+//
+// To encode a shifted-register form, chain WithRmShift after SUBPT:
+//
+//	SUBPT(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // SUBPT x0, x1, x2, lsl #0x3
+func SUBPT(rd, rn, rm Register) DPInstruction {
+	return DPInstruction(OpSUBPT).
+		WithSF(true). // only 64-bit registers allowed
 		WithRm(rm).
 		WithRn(rn).
 		WithRd(rd)

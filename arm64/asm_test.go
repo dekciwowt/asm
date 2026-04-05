@@ -108,6 +108,10 @@ func TestDPInstructions(t *testing.T) {
 		{uint32(ADCS(X0, X1, X2)), 0xBA020020},
 		{uint32(SBC(X0, X1, X2)), 0xDA020020},
 		{uint32(SBCS(X0, X1, X2)), 0xFA020020},
+
+		// 64-bit (sf=1)
+		{uint32(ADDPT(X0, X1, X2)), 0x9A022020},
+		{uint32(SUBPT(X0, X1, X2)), 0xDA022020},
 	}
 
 	tests.Test(t)
