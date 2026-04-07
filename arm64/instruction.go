@@ -39,11 +39,6 @@ func getSF[I Instruction](inst I) uint8 {
 	return get[uint8](inst, sfMask, sfPos)
 }
 
-// setSF encodes sf into the `sf` field of instruction
-func setSF[I Instruction](inst I, sf uint8) I {
-	return set(inst, sf, sfMask, sfPos)
-}
-
 // getRm extracts the `Rm` register field from instruction.
 // Returns an X-register if sf=1, otherwise a W-register
 func getRm[I Instruction](inst I) Register {
@@ -164,6 +159,7 @@ type DPInstruction uint32
 // Field sizes, masks and positions for DPInstruction sub-encodings.
 // Fields are shared where their bit positions coincide across sub-encodings
 const (
+	dpOperSize   uint32 = 1
 	dpOpcodeSize uint32 = 5
 	dpShiftSize  uint32 = 2
 	dpExtSize    uint32 = 1
@@ -174,6 +170,7 @@ const (
 	dpImm6Size   uint32 = 6
 	dpImm12Size  uint32 = 12
 
+	dpOperMask   uint32 = (1 << dpOperSize) - 1
 	dpOpcodeMask uint32 = (1 << dpOpcodeSize) - 1
 	dpShiftMask  uint32 = (1 << dpShiftSize) - 1
 	dpExtMask    uint32 = (1 << dpExtSize) - 1
@@ -184,6 +181,7 @@ const (
 	dpImm6Mask   uint32 = (1 << dpImm6Size) - 1
 	dpImm12Mask  uint32 = (1 << dpImm12Size) - 1
 
+	dpOperPos   uint32 = 30
 	dpOpcodePos uint32 = 24
 	dpShiftPos  uint32 = 22
 	dpExtPos    uint32 = 21
@@ -195,35 +193,20 @@ const (
 	dpImm12Pos  uint32 = 10
 )
 
-// IsSF returns true if the instruction operates on 64-bit (X) registers
-func (i DPInstruction) IsSF() bool {
-	return getSF(i) == 1
-}
-
-// WithSF sets the `sf` bit and returns the updated instruction.
-// Pass true for 64-bit (X) registers, false for 32-bit (W) registers
-func (i DPInstruction) WithSF(flag bool) DPInstruction {
-	var sf uint8
-	if flag {
-		sf = 1
-	}
-
-	return setSF(i, sf)
-}
-
-func (i DPInstruction) Opcode() DPOpcode {
-	oper := get[uint8](i, dpOpcodeOperMask, dpOpcodeOperPos)
-	sign := get[uint8](i, dpOpcodeSignMask, dpOpcodeSignPos)
+func (i DPInstruction) Opcode() Opcode {
+	sf := getSF(i)
+	oper := get[uint8](i, opcodeOperMask, opcodeOperPos)
+	sign := get[uint8](i, opcodeSignMask, opcodeSignPos)
 
 	switch cat := get[uint8](i, dpOpcodeMask, dpOpcodePos); cat {
-	case dpCat2xSource:
-		opt2 := get[uint8](i, dpOpcodeOpt2Mask, dpOpcodeOpt2Pos)
-		opt4 := get[uint8](i, dpOpcodeOpt4Mask, dpOpcodeOpt4Pos)
+	case catNSources:
+		opt2 := get[uint8](i, opcodeOpt2Mask, opcodeOpt2Pos)
+		opt4 := get[uint8](i, opcodeOpt4Mask, opcodeOpt4Pos)
 
-		return dpOpcode(0, 0, opt4, 0, opt2, cat, sign, oper)
+		return opcode(0, 0, opt4, 0, opt2, cat, sign, oper, sf)
 
 	default:
-		return dpOpcode(0, 0, 0, 0, 0, cat, sign, oper)
+		return opcode(0, 0, 0, 0, 0, cat, sign, oper, sf)
 	}
 }
 
@@ -272,7 +255,7 @@ func (i DPInstruction) Bitmask() uint64 {
 // fields and returns the updated instruction. The `sf` bit must be set before
 // calling this method as it determines whether to use 32 or 64-bit encoding
 func (i DPInstruction) WithBitmask(bitmask uint64) DPInstruction {
-	n, imms, immr := encodeBitmask(bitmask, i.IsSF())
+	n, imms, immr := encodeBitmask(bitmask, getSF(i) == 1)
 
 	i = set(i, n, dpShiftMask>>1, dpShiftPos)
 	i = set(i, imms, dpImmsMask, dpImmsPos)
@@ -357,10 +340,10 @@ func (i DPInstruction) WithRd(rd Register) DPInstruction {
 func (i DPInstruction) String() string {
 	var b strings.Builder
 
-	fmt.Fprintf(&b, "%s %s, %s, ", i.Opcode(), i.Rd(), i.Rn())
+	fmt.Fprintf(&b, "%s %s, %s", i.Opcode(), i.Rd(), i.Rn())
 
 	switch cat := get[uint8](i, dpOpcodeMask, dpOpcodePos); cat {
-	case dpCatArithReg, dpCatLogicReg:
+	case catArithReg, catLogicReg:
 		shift := get[Shift](i, dpShiftMask, dpShiftPos)
 		ext := get[uint8](i, dpExtMask, dpExtPos)
 
@@ -369,34 +352,39 @@ func (i DPInstruction) String() string {
 			opt := get[Extension](i, dpOptMask, dpOptPos)
 			amount := get[uint8](i, dpImm3Mask, dpImm3Pos)
 
-			fmt.Fprintf(&b, "%s, %s #%#X", i.Rm(), opt, amount)
+			fmt.Fprintf(&b, ", %s, %s #%#X", i.Rm(), opt, amount)
 			break
 		}
 
 		// shifted-register form
 		if amount := get[uint8](i, dpImm6Mask, dpImm6Pos); ext == 0 && amount != 0x0 {
-			fmt.Fprintf(&b, "%s, %s #%#X", i.Rm(), shift, amount)
+			fmt.Fprintf(&b, ", %s, %s #%#X", i.Rm(), shift, amount)
 			break
 		}
 
 		// plain register form
-		fmt.Fprintf(&b, "%s", i.Rm())
+		fmt.Fprintf(&b, ", %s", i.Rm())
 
-	case dpCatArithImm:
+	case catArithImm:
 		// The `shift` bit indicates imm12 << 12 when set
 		if shift := get[uint8](i, dpShiftMask>>1, dpShiftPos); shift == 0 {
-			fmt.Fprintf(&b, "#%#X", i.Immediate())
+			fmt.Fprintf(&b, ", #%#X", i.Immediate())
 			break
 		}
 
-		fmt.Fprintf(&b, "#%#X, lsl #12", i.Immediate())
+		fmt.Fprintf(&b, ", #%#X, lsl #12", i.Immediate())
 
-	case dpCatLogicImm:
-		fmt.Fprintf(&b, "#%#X", i.Bitmask())
+	case catLogicImm:
+		fmt.Fprintf(&b, ", #%#X", i.Bitmask())
 
-	case dpCat2xSource:
+	case catNSources:
+		// 1 source operand
+		if oper := get[uint8](i, dpOperMask, dpOperPos); oper == 1 {
+			break
+		}
+
 		// plain register form
-		fmt.Fprintf(&b, "%s", i.Rm())
+		fmt.Fprintf(&b, ", %s", i.Rm())
 
 	default:
 		log.Fatalf("Unknown opcode category: Instruction(%032b)", uint32(i))

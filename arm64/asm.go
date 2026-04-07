@@ -1,343 +1,313 @@
 package arm64
 
-// The `sf` bit is derived from the register arguments: if any register is
-// an X-register (> W30), the instruction operates in 64-bit mode.
-// All registers in a single instruction must be consistently 32 or 64-bit
-
-// ADD encodes an ADD (plain register) instruction
-//
-//	ADD <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after ADD:
-//
-//	ADD(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // ADD x0, x1, x2, lsl #0x3
-//
-// To encode an extended-register form, chain WithRmExt after ADD:
-//
-//	ADD(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // ADD x0, x1, x2, sxtw #0x2
-func ADD(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpADD).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ADDS encodes an ADDS (plain register) instruction
-//
-//	ADDS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after ADDS:
-//
-//	ADDS(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // ADDS x0, x1, x2, lsl #0x3
-//
-// To encode an extended-register form, chain WithRmExt after ADDS:
-//
-//	ADDS(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // ADDS x0, x1, x2, sxtw #0x2
-func ADDS(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpADDS).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// SUB encodes a SUB (plain register) instruction
-//
-//	SUB <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after SUB:
-//
-//	SUB(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // SUB x0, x1, x2, lsl #0x3
-//
-// To encode an extended-register form, chain WithRmExt after SUB:
-//
-//	SUB(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // SUB x0, x1, x2, sxtw #0x2
-func SUB(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpSUB).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// SUBS encodes a SUBS (plain register) instruction
-//
-//	SUBS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after SUBS:
-//
-//	SUBS(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // SUBS x0, x1, x2, lsl #0x3
-//
-// To encode an extended-register form, chain WithRmExt after SUBS:
-//
-//	SUBS(X0, X1, X2).WithRmExt(ExtSXTW, 0x2) // SUBS x0, x1, x2, sxtw #0x2
-func SUBS(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpSUBS).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// AND encodes an AND (plain register) instruction
-//
-//	AND <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after AND:
-//
-//	AND(X0, X1, X2).WithRmShift(ShiftLSL, 0x4) // AND x0, x1, x2, lsl #0x4
-func AND(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpAND).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ANDS encodes an ANDS (plain register) instruction
-//
-//	ANDS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after ANDS:
-//
-//	ANDS(X0, X1, X2).WithRmShift(ShiftLSL, 0x4) // ANDS x0, x1, x2, lsl #0x4
-func ANDS(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpANDS).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ORR encodes an ORR (plain register) instruction
-//
-//	ORR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after ORR:
-//
-//	ORR(X0, X1, X2).WithRmShift(ShiftLSL, 0x4)  // ORR x0, x1, x2, lsl #0x4
-func ORR(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpORR).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// EOR encodes an EOR (plain register) instruction
-//
-//	EOR <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after EOR:
-//
-//	EOR(X0, X1, X2).WithRmShift(ShiftLSL, 0x4)  // EOR x0, x1, x2, lsl #0x4
-func EOR(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpEOR).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ADDI encodes an ADD (immediate) instruction
-//
-//	ADD <Wd|Xd>, <Wn|Xn>, #imm
-//
-// To encode the shifted form (imm << 12), chain WithImmShift after ADDI:
-//
-//	ADDI(X0, X1, 0x1).WithImmShift(true)  // ADD X0, X1, #0x1 lsl #12
-func ADDI(rd, rn Register, imm uint16) DPInstruction {
-	return DPInstruction(OpADDI).
-		WithSF(W30 < rd || W30 < rn).
-		WithImmediate(imm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ADDSI encodes an ADDS (immediate) instruction
-//
-//	ADDS <Wd|Xd>, <Wn|Xn>, #imm
-//
-// To encode the shifted form (imm << 12), chain WithImmShift after ADDSI:
-//
-//	ADDSI(X0, X1, 0x1).WithImmShift(true)  // ADDS X0, X1, #0x1 lsl #12
-func ADDSI(rd, rn Register, imm uint16) DPInstruction {
-	return DPInstruction(OpADDSI).
-		WithSF(W30 < rd || W30 < rn).
-		WithImmediate(imm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// SUBI encodes a SUB (immediate) instruction
-//
-//	SUB <Wd|Xd>, <Wn|Xn>, #imm
-//
-// To encode the shifted form (imm << 12), chain WithImmShift after SUBI:
-//
-//	SUBI(X0, X1, 0x1).WithImmShift(true)  // SUB X0, X1, #0x1 lsl #12
-func SUBI(rd, rn Register, imm uint16) DPInstruction {
-	return DPInstruction(OpSUBI).
-		WithSF(W30 < rd || W30 < rn).
-		WithImmediate(imm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// SUBSI encodes a SUBS (immediate) instruction
-//
-//	SUBS <Wd|Xd>, <Wn|Xn>, #imm
-//
-// To encode the shifted form (imm << 12), chain WithImmShift after SUBSI:
-//
-//	SUBSI(X0, X1, 0x1).WithImmShift(true)  // SUBS X0, X1, #0x1 lsl #12
-func SUBSI(rd, rn Register, imm uint16) DPInstruction {
-	return DPInstruction(OpSUBSI).
-		WithSF(W30 < rd || W30 < rn).
-		WithImmediate(imm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ANDI encodes an AND (immediate) instruction.
-// bitmask must be a valid ARM64 bitmask immediate — a replicated pattern
-// of contiguous ones
-//
-//	AND <Wd|Xd>, <Wn|Xn>, #bitmask
-func ANDI(rd, rn Register, bitmask uint64) DPInstruction {
-	return DPInstruction(OpANDI).
-		WithSF(W30 < rd || W30 < rn).
-		WithBitmask(bitmask).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ANDSI encodes an ANDS (immediate) instruction.
-// bitmask must be a valid ARM64 bitmask immediate — a replicated pattern
-// of contiguous ones
-//
-//	ANDS <Wd|Xd>, <Wn|Xn>, #bitmask
-func ANDSI(rd, rn Register, bitmask uint64) DPInstruction {
-	return DPInstruction(OpANDSI).
-		WithSF(W30 < rd || W30 < rn).
-		WithBitmask(bitmask).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ORRI encodes an ORR (immediate) instruction.
-// bitmask must be a valid ARM64 bitmask immediate — a replicated pattern
-// of contiguous ones
-//
-//	ORR <Wd|Xd>, <Wn|Xn>, #bitmask
-func ORRI(rd, rn Register, bitmask uint64) DPInstruction {
-	return DPInstruction(OpORRI).
-		WithSF(W30 < rd || W30 < rn).
-		WithBitmask(bitmask).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// EORI encodes an EOR (immediate) instruction.
-// bitmask must be a valid ARM64 bitmask immediate — a replicated pattern
-// of contiguous ones
-//
-//	EOR <Wd|Xd>, <Wn|Xn>, #bitmask
-func EORI(rd, rn Register, bitmask uint64) DPInstruction {
-	return DPInstruction(OpEORI).
-		WithSF(W30 < rd || W30 < rn).
-		WithBitmask(bitmask).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ADC encodes an ADC (plain register) instruction
-//
-//	ADC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-func ADC(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpADC).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ADCS encodes an ADCS (plain register) instruction
-//
-//	ADCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-func ADCS(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpADCS).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// SBC encodes a SBC (plain register) instruction
-//
-//	SBC <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-func SBC(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpSBC).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// SBCS encodes a SBCS (plain register) instruction
-//
-//	SBCS <Wd|Xd>, <Wn|Xn>, <Wm|Xm>
-func SBCS(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpSBCS).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// ADDPT encodes a ADDPT (plain register) instruction
-//
-//	ADDPT <Xd>, <Xn>, <Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after ADDPT:
-//
-//	ADDPT(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // ADDPT x0, x1, x2, lsl #0x3
-func ADDPT(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpADDPT).
-		WithSF(true). // only 64-bit registers allowed
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
-// SUBPT encodes a SUBPT (plain register) instruction
-//
-//	SUBPT <Xd>, <Xn>, <Xm>
-//
-// To encode a shifted-register form, chain WithRmShift after SUBPT:
-//
-//	SUBPT(X0, X1, X2).WithRmShift(ShiftLSL, 0x3) // SUBPT x0, x1, x2, lsl #0x3
-func SUBPT(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpSUBPT).
-		WithSF(true). // only 64-bit registers allowed
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
-}
-
 func UDIV(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpUDIV).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
+	inst := DPInstruction(OpUDIVw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpUDIVx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
 }
 
 func SDIV(rd, rn, rm Register) DPInstruction {
-	return DPInstruction(OpSDIV).
-		WithSF(W30 < rd || W30 < rn || W30 < rm).
-		WithRm(rm).
-		WithRn(rn).
-		WithRd(rd)
+	inst := DPInstruction(OpSDIVw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpSDIVx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func LSLV(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpLSLVw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpLSLVx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func LSRV(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpLSRVw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpLSRVx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func ASRV(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpASRVw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpASRVx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func RORV(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpRORVw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpRORVx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32B(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32B)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32H(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32H)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32W(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32W)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32CB(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32CB)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32CH(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32CH)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32CW(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32CW)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32X(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32X)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func CRC32CX(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpCRC32CX)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func SMAX(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpSMAXw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpSMAXx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func UMAX(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpUMAXw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpUMAXx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func SMIN(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpSMINw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpSMINx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func UMIN(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpUMINw)
+	if W30 < rd || W30 < rn || W30 < rm {
+		inst = DPInstruction(OpUMINx)
+	}
+
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func SUBP(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpSUBPx)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func SUBPS(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpSUBPSx)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func IRG(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpIRGx)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func GMI(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpGMIx)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func PACGA(rd, rn, rm Register) DPInstruction {
+	inst := DPInstruction(OpPACGAx)
+	return inst.WithRm(rm).WithRn(rn).WithRd(rd)
+}
+
+func RBIT(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpRBITw)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpRBITx)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func REV16(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpREV16w)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpREV16x)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func REV32(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpREV32x)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func REV(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpREVw)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpREVx)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func CLZ(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpCLZw)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpCLZx)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func CLS(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpCLSw)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpCLSx)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func CTZ(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpCTZw)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpCTZx)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func CNT(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpCNTw)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpCNTx)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func ABS(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpABSw)
+	if W30 < rd || W30 < rn {
+		inst = DPInstruction(OpABSx)
+	}
+
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACIA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACIAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACIB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACIBx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACDA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACDAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACDB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACDBx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTIA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTIAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTIB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTIBx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTDA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTDAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTDB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTDBx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACIZA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACIZAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACIZB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACIZBx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACDZA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACDZAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func PACDZB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpPACDZBx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTIZA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTIZAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTIZB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTIZBx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTDZA(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTDZAx)
+	return inst.WithRn(rn).WithRd(rd)
+}
+
+func AUTDZB(rd, rn Register) DPInstruction {
+	inst := DPInstruction(OpAUTDZBx)
+	return inst.WithRn(rn).WithRd(rd)
 }
