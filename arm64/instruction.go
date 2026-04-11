@@ -2,92 +2,96 @@ package arm64
 
 import (
 	"fmt"
-	"log"
-	"strings"
 )
 
-// Instruction is the type constraint for all ARM64 instruction word types.
-// Every concrete instruction type is a named uint32 with a String method
-type Instruction interface {
-	~uint32
+// Data-Processing instruction layout
+//
+//	31   30   29  28-24      23-21  20-16      15-10        9-5        4-0
+//	+----+----+---+----------+------+----------+------------+----------+----------+
+//	| sf | op | S |   opt1   | opt2 |   opt3   |    opt4    |   opt5   |   opt6   |
+//	+----+----+---+----------+------+----------+------------+----------+----------+
+type Instruction uint32
 
-	String() string
-}
-
-// Shared field sizes, masks and bit positions used across all instruction
-// families
 const (
-	rdSize uint32 = 5
-	rnSize uint32 = 5
-	rmSize uint32 = 5
-	sfSize uint32 = 1
+	opt6Size uint32 = 5
+	opt5Size uint32 = 5
+	opt4Size uint32 = 6
+	opt3Size uint32 = 5
+	opt2Size uint32 = 3
+	opt1Size uint32 = 5
+	sSize    uint32 = 1
+	opSize   uint32 = 1
+	sfSize   uint32 = 1
 
-	rdMask uint32 = (1 << rdSize) - 1
-	rnMask uint32 = (1 << rnSize) - 1
-	rmMask uint32 = (1 << rmSize) - 1
-	sfMask uint32 = (1 << sfSize) - 1
+	opt6Mask uint32 = (1 << opt6Size) - 1
+	opt5Mask uint32 = (1 << opt5Size) - 1
+	opt4Mask uint32 = (1 << opt4Size) - 1
+	opt3Mask uint32 = (1 << opt3Size) - 1
+	opt2Mask uint32 = (1 << opt2Size) - 1
+	opt1Mask uint32 = (1 << opt1Size) - 1
+	sMask    uint32 = (1 << sSize) - 1
+	opMask   uint32 = (1 << opSize) - 1
+	sfMask   uint32 = (1 << sfSize) - 1
 
-	rdPos uint32 = 0
-	rnPos uint32 = 5
-	rmPos uint32 = 16
-	sfPos uint32 = 31
+	opt6Pos uint32 = 0
+	opt5Pos uint32 = 5
+	opt4Pos uint32 = 10
+	opt3Pos uint32 = 16
+	opt2Pos uint32 = 21
+	opt1Pos uint32 = 24
+	sPos    uint32 = 29
+	opPos   uint32 = 30
+	sfPos   uint32 = 31
 )
 
-// getSF returns the `sf` bit of instruction as a raw uint8 (0 or 1).
-// sf=1 indicates 64-bit (X) registers; sf=0 indicates 32-bit (W) registers
-func getSF[I Instruction](inst I) uint8 {
-	return get[uint8](inst, sfMask, sfPos)
+type category uint8
+
+const (
+	catDataProcLogicReg category = 0x0A // Logical (shifted register)
+	catDataProcArithReg category = 0x0B // Add/subtract (shifted/extended register)
+	catDataProcArithImm category = 0x11 // Add/subtract (immediate)
+	catDataProcLogicImm category = 0x12 // Logical (immediate) / Move wide (immediate)
+	catDataProcBitfield category = 0x13 // Bitfield / Extract
+	catDataProcNSources category = 0x1A // Add/subtract with carry, Cond compare, Cond select, DP 1/2-source
+	catDataProc3Sources category = 0x1B // Data-processing (3 source)
+)
+
+var categories = map[category]string{
+	catDataProcLogicReg: "Data-Processing – Logical (shifted register)",
+	catDataProcArithReg: "Data-Processing – Add/Substract (shifted register)",
+	catDataProcArithImm: "Data-Processing – Add/Substract (immediate)",
+	catDataProcLogicImm: "Data-Processing – Logical (immediate)",
+	catDataProcNSources: "Data-Processing – 1/2 source",
+	catDataProc3Sources: "Data-Processing – 3 source",
 }
 
-// getRm extracts the `Rm` register field from instruction.
-// Returns an X-register if sf=1, otherwise a W-register
-func getRm[I Instruction](inst I) Register {
-	rm := get[Register](inst, rmMask, rmPos)
-	if getSF(inst) == 0 {
-		return rm
+func (c category) String() string {
+	if name, ok := categories[c]; ok {
+		return name
 	}
 
-	return rm + X0
+	return fmt.Sprintf("category(%b)", uint8(c))
 }
 
-// setRm encodes rm into the `Rm` field of instruction.
-// The register index is normalized to [0, 31] via modulo X0
-func setRm[I Instruction](inst I, rm Register) I {
-	return set(inst, rm%X0, rmMask, rmPos)
-}
+var ( // Data-Processing (Logical)
+	instANDw = identity[Instruction](0x0, 0x0, 0x0, 0x0, 0x0, catDataProcLogicReg, 0, 0, 0)
+	instANDx = identity[Instruction](0x0, 0x0, 0x0, 0x0, 0x0, catDataProcLogicReg, 0, 0, 1)
+)
 
-// getRn extracts the `Rn` register field from instruction.
-// Returns an X-register if sf=1, otherwise a W-register
-func getRn[I Instruction](inst I) Register {
-	rn := get[Register](inst, rnMask, rnPos)
-	if getSF(inst) == 0 {
-		return rn
-	}
+func identity[I ~uint32, O operand](opt6, opt5, opt4, opt3, opt2, opt1, s, op, sf O) I {
+	var i I
 
-	return rn + X0
-}
+	i = set(i, opt6, opt6Mask, opt6Pos)
+	i = set(i, opt5, opt5Mask, opt5Pos)
+	i = set(i, opt4, opt4Mask, opt4Pos)
+	i = set(i, opt3, opt3Mask, opt3Pos)
+	i = set(i, opt2, opt2Mask, opt2Pos)
+	i = set(i, opt1, opt1Mask, opt1Pos)
+	i = set(i, s, sMask, sPos)
+	i = set(i, op, opMask, opPos)
+	i = set(i, sf, sfMask, sfPos)
 
-// setRn encodes rn into the `Rn` field of instruction.
-// The register index is normalized to [0, 31] via modulo X0
-func setRn[I Instruction](inst I, rn Register) I {
-	return set(inst, rn%X0, rnMask, rnPos)
-}
-
-// getRn extracts the `Rd` register field from instruction.
-// Returns an X-register if sf=1, otherwise a W-register
-func getRd[I Instruction](inst I) Register {
-	rd := get[Register](inst, rdMask, rdPos)
-	if getSF(inst) == 0 {
-		return rd
-	}
-
-	return rd + X0
-}
-
-// setRn encodes rd into the `Rd` field of instruction.
-// The register index is normalized to [0, 31] via modulo X0
-func setRd[I Instruction](inst I, rd Register) I {
-	return set(inst, rd%X0, rdMask, rdPos)
+	return i
 }
 
 // operand is the type constraint for raw field values extracted from or written into
@@ -107,288 +111,15 @@ func set[O, I operand](inst I, op O, mask, shift uint32) I {
 	return I((uint32(inst) & ^(mask << shift)) | ((uint32(op) << shift) & (mask << shift)))
 }
 
-// DPInstruction is a 32-bit ARM64 Data Processing instruction word.
-//
-// Four sub-encodings share this type.
-// The caller selects the appropriate accessors based on which sub-encoding
-// the instruction uses:
-//
-// Plain Register:
-//
-//	31     30     29       28-24      23-22     21    20-16  15-10            9-5    4-0
-//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
-//	|  sf  |  op  |  sign  |  opcode  |  00     |  0  |  Rm  |  000000        |  Rn  |  Rd  |
-//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
-//
-// Shifted Register:
-//
-//	31     30     29       28-24      23-22     21    20-16  15-10            9-5    4-0
-//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
-//	|  sf  |  op  |  sign  |  opcode  |  shift  |  0  |  Rm  |  imm6          |  Rn  |  Rd  |
-//	+------+------+--------+----------+---------+-----+------+----------------+------+------+
-//
-// Extended Register:
-//
-//	31     30     29       28-24      23-22     21    20-16  15-13   12-10    9-5    4-0
-//	+------+------+--------+----------+---------+-----+------+-------+--------+------+------+
-//	|  sf  |  op  |  sign  |  opcode  |  00     |  1  |  Rm  |  opt  |  imm3  |  Rn  |  Rd  |
-//	+------+------+--------+----------+---------+-----+------+-------+--------+------+------+
-//
-// Immediate:
-//
-//	31     30     29       28-24      23    22        21-10                   9-5    4-0
-//	+------+------+--------+----------+-----+---------+-----------------------+------+------+
-//	|  sf  |  op  |  sign  |  opcode  |  0  |  shift  |  imm12                |  Rn  |  Rd  |
-//	+------+------+--------+----------+-----+---------+-----------------------+------+------+
-//
-// Bitmask Immediate:
-//
-//	31     30     29       28-24      23    22        21-16       15-10       9-5    4-0
-//	+------+------+--------+----------+-----+---------+-----------+-----------+------+------+
-//	|  sf  |  op  |  sign  |  opcode  |  0  |  N      |  imms     |  immr     |  Rn  |  Rd  |
-//	+------+------+--------+----------+-----+---------+-----------+-----------+------+------+
-//
-// Checked Pointer:
-//
-//	31     30     29       28-24      23-21           20-16  15-13   12-10    9-5    4-0
-//	+------+------+--------+----------+---------------+------+-------+--------+------+------+
-//	|  sf  |  op  |  sign  |  opcode  |  000          |  Rm  |  001  |  imm3  |  Rn  |  Rd  |
-//	+------+------+--------+----------+---------------+------+-------+--------+------+------+
-type DPInstruction uint32
-
-// Field sizes, masks and positions for DPInstruction sub-encodings.
-// Fields are shared where their bit positions coincide across sub-encodings
-const (
-	dpOperSize   uint32 = 1
-	dpOpcodeSize uint32 = 5
-	dpShiftSize  uint32 = 2
-	dpExtSize    uint32 = 1
-	dpOptSize    uint32 = 3
-	dpImmsSize   uint32 = 6
-	dpImmrSize   uint32 = 6
-	dpImm3Size   uint32 = 3
-	dpImm6Size   uint32 = 6
-	dpImm12Size  uint32 = 12
-
-	dpOperMask   uint32 = (1 << dpOperSize) - 1
-	dpOpcodeMask uint32 = (1 << dpOpcodeSize) - 1
-	dpShiftMask  uint32 = (1 << dpShiftSize) - 1
-	dpExtMask    uint32 = (1 << dpExtSize) - 1
-	dpOptMask    uint32 = (1 << dpOptSize) - 1
-	dpImmsMask   uint32 = (1 << dpImmsSize) - 1
-	dpImmrMask   uint32 = (1 << dpImmrSize) - 1
-	dpImm3Mask   uint32 = (1 << dpImm3Size) - 1
-	dpImm6Mask   uint32 = (1 << dpImm6Size) - 1
-	dpImm12Mask  uint32 = (1 << dpImm12Size) - 1
-
-	dpOperPos   uint32 = 30
-	dpOpcodePos uint32 = 24
-	dpShiftPos  uint32 = 22
-	dpExtPos    uint32 = 21
-	dpOptPos    uint32 = 13
-	dpImmsPos   uint32 = 16
-	dpImmrPos   uint32 = 10
-	dpImm3Pos   uint32 = 10
-	dpImm6Pos   uint32 = 10
-	dpImm12Pos  uint32 = 10
-)
-
-func (i DPInstruction) Opcode() Opcode {
-	sf := getSF(i)
-	oper := get[uint8](i, opcodeOperMask, opcodeOperPos)
-	sign := get[uint8](i, opcodeSignMask, opcodeSignPos)
-
-	switch cat := get[uint8](i, dpOpcodeMask, dpOpcodePos); cat {
-	case catNSources:
-		opt2 := get[uint8](i, opcodeOpt2Mask, opcodeOpt2Pos)
-		opt4 := get[uint8](i, opcodeOpt4Mask, opcodeOpt4Pos)
-
-		return opcode(0, 0, opt4, 0, opt2, cat, sign, oper, sf)
-
-	default:
-		return opcode(0, 0, 0, 0, 0, cat, sign, oper, sf)
-	}
-}
-
-// Immediate returns the 12-bit unsigned immediate
-func (i DPInstruction) Immediate() uint16 {
-	return get[uint16](i, dpImm12Mask, dpImm12Pos)
-}
-
-// WithImmediate encodes unsigned immediate into `imm12` field and
-// returns the updated instruction
-func (i DPInstruction) WithImmediate(imm uint16) DPInstruction {
-	return set(i, imm, dpImm12Mask, dpImm12Pos)
-}
-
-// ImmShift decodes the `shift` bit and returns the shift kind and
-// the predefined shift amount
-func (i DPInstruction) ImmShift() (Shift, uint8) {
-	if shift := get[uint8](i, dpShiftMask>>1, dpShiftPos); shift == 0x0 {
-		return ShiftLSL, 0
+func getReg[I ~uint32](inst I, mask, shift uint32) Register {
+	reg := get[Register](inst, mask, shift)
+	if sf := get[uint8](inst, sfMask, sfPos); sf == 0 {
+		return reg
 	}
 
-	return ShiftLSL, 0xC
+	return reg + X0
 }
 
-// WithImmShift sets the `shift` bit and returns the updated instruction
-func (i DPInstruction) WithImmShift(flag bool) DPInstruction {
-	var shift uint8
-	if flag {
-		shift = 1
-	}
-
-	return set(i, shift, dpShiftMask>>1, dpShiftPos)
-}
-
-// Bitmask decodes the `N/imms/immr` fields and returns the 64-bit immediate
-// value they represent. Valid only for logical immediate instructions
-func (i DPInstruction) Bitmask() uint64 {
-	n := get[uint8](i, dpShiftMask>>1, dpShiftPos)
-	imms := get[uint8](i, dpImmsMask, dpImmsPos)
-	immr := get[uint8](i, dpImmrMask, dpImmrPos)
-
-	return decodeBitmask(n, imms, immr)
-}
-
-// WithBitmask encodes value as an ARM64 bitmask immediate into the `N/imms/immr`
-// fields and returns the updated instruction. The `sf` bit must be set before
-// calling this method as it determines whether to use 32 or 64-bit encoding
-func (i DPInstruction) WithBitmask(bitmask uint64) DPInstruction {
-	n, imms, immr := encodeBitmask(bitmask, getSF(i) == 1)
-
-	i = set(i, n, dpShiftMask>>1, dpShiftPos)
-	i = set(i, imms, dpImmsMask, dpImmsPos)
-	i = set(i, immr, dpImmrMask, dpImmrPos)
-
-	return i
-}
-
-// Rd returns the `Rm` register field, adjusted for the `sf` bit
-func (i DPInstruction) Rm() Register {
-	return getRm(i)
-}
-
-// WithRm encodes rn into the `Rm` field and returns the updated instruction
-func (i DPInstruction) WithRm(rm Register) DPInstruction {
-	return setRm(i, rm)
-}
-
-// RmShift returns the shift kind (LSL/LSR/ASR) and shift amount for
-// shifted-register instructions
-func (i DPInstruction) RmShift() (Shift, uint8) {
-	shift := get[Shift](i, dpShiftMask, dpShiftPos)
-	amount := get[uint8](i, dpImm6Mask, dpImm6Pos)
-
-	return shift, amount
-}
-
-// WithRmShift encodes a shifted-register operand into the instruction.
-// Sets ext=0, the `shift`, and the shift amount into `imm6` field.
-// Returns the updated instruction
-func (i DPInstruction) WithRmShift(shift Shift, amount uint8) DPInstruction {
-	i = set(i, uint8(0), dpExtMask, dpExtPos)
-	i = set(i, uint8(shift), dpShiftMask, dpShiftPos)
-	i = set(i, amount, dpImm6Mask, dpImm6Pos)
-
-	return i
-}
-
-// RmExt returns the extend option and shift amount for extended-register
-// instructions. Valid only for extended-register form instructions
-func (i DPInstruction) RmExt() (Extension, uint8) {
-	opt := get[Extension](i, dpOptMask, dpOptPos)
-	amount := get[uint8](i, dpImm3Mask, dpImm3Pos)
-
-	return opt, amount
-}
-
-// WithRmExt encodes an extended-register operand into the instruction.
-// Sets ext=0, shift=0, the extend option into `opt`, and the shift amount bits
-// into `imm3` field. Returns the updated instruction
-func (i DPInstruction) WithRmExt(option Extension, amount uint8) DPInstruction {
-	i = set(i, uint8(1), dpExtMask, dpExtPos)
-	i = set(i, uint8(0), dpShiftMask, dpShiftPos)
-	i = set(i, uint8(option), dpOptMask, dpOptPos)
-	i = set(i, amount, dpImm3Mask, dpImm3Pos)
-
-	return i
-}
-
-// Rd returns the `Rn` register field, adjusted for the `sf` bit
-func (i DPInstruction) Rn() Register {
-	return getRn(i)
-}
-
-// WithRn encodes rn into the `Rn` field and returns the updated instruction
-func (i DPInstruction) WithRn(rn Register) DPInstruction {
-	return setRn(i, rn)
-}
-
-// Rd returns the `Rd` register field, adjusted for the `sf` bit
-func (i DPInstruction) Rd() Register {
-	return getRd(i)
-}
-
-// WithRd encodes rd into the `Rd` field and returns the updated instruction
-func (i DPInstruction) WithRd(rd Register) DPInstruction {
-	return setRd(i, rd)
-}
-
-// String returns a human-readable ARM64 assembly representation of the
-// instruction, selecting the correct operand format based on the opcode family
-func (i DPInstruction) String() string {
-	var b strings.Builder
-
-	fmt.Fprintf(&b, "%s %s, %s", i.Opcode(), i.Rd(), i.Rn())
-
-	switch cat := get[uint8](i, dpOpcodeMask, dpOpcodePos); cat {
-	case catArithReg, catLogicReg:
-		shift := get[Shift](i, dpShiftMask, dpShiftPos)
-		ext := get[uint8](i, dpExtMask, dpExtPos)
-
-		// extended-register form
-		if ext == 1 && shift == 0x0 {
-			opt := get[Extension](i, dpOptMask, dpOptPos)
-			amount := get[uint8](i, dpImm3Mask, dpImm3Pos)
-
-			fmt.Fprintf(&b, ", %s, %s #%#X", i.Rm(), opt, amount)
-			break
-		}
-
-		// shifted-register form
-		if amount := get[uint8](i, dpImm6Mask, dpImm6Pos); ext == 0 && amount != 0x0 {
-			fmt.Fprintf(&b, ", %s, %s #%#X", i.Rm(), shift, amount)
-			break
-		}
-
-		// plain register form
-		fmt.Fprintf(&b, ", %s", i.Rm())
-
-	case catArithImm:
-		// The `shift` bit indicates imm12 << 12 when set
-		if shift := get[uint8](i, dpShiftMask>>1, dpShiftPos); shift == 0 {
-			fmt.Fprintf(&b, ", #%#X", i.Immediate())
-			break
-		}
-
-		fmt.Fprintf(&b, ", #%#X, lsl #12", i.Immediate())
-
-	case catLogicImm:
-		fmt.Fprintf(&b, ", #%#X", i.Bitmask())
-
-	case catNSources:
-		// 1 source operand
-		if oper := get[uint8](i, dpOperMask, dpOperPos); oper == 1 {
-			break
-		}
-
-		// plain register form
-		fmt.Fprintf(&b, ", %s", i.Rm())
-
-	default:
-		log.Fatalf("Unknown opcode category: Instruction(%032b)", uint32(i))
-	}
-
-	return b.String()
+func setReg[I ~uint32](inst I, reg Register, mask, shift uint32) I {
+	return set(inst, reg%X0, mask, shift)
 }

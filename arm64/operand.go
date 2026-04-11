@@ -36,6 +36,7 @@ const (
 	W28
 	W29
 	W30
+	w31
 
 	X0
 	X1
@@ -66,16 +67,17 @@ const (
 	X26
 	X27
 	X28
-	X29
-	X30
+	x29
+	x30
+	x31
 )
 
 const (
-	FP  Register = X29
-	LR  Register = X30
-	SP  Register = X30 + 1
-	XZR Register = X30 + 1
-	WZR Register = W30 + 1
+	FP  Register = x29
+	LR  Register = x30
+	SP  Register = x31
+	XZR Register = x31
+	WZR Register = w31
 )
 
 func (r Register) String() string {
@@ -130,14 +132,10 @@ const (
 )
 
 var exts = map[Extension]string{
-	ExtUXTB: "uxtb",
-	ExtUXTH: "uxth",
-	ExtUXTW: "uxtw",
-	ExtUXTX: "uxtx",
-	ExtSXTB: "sxtb",
-	ExtSXTH: "sxth",
-	ExtSXTW: "sxtw",
-	ExtSXTX: "sxtx",
+	ExtUXTB: "uxtb", ExtSXTB: "sxtb",
+	ExtUXTH: "uxth", ExtSXTH: "sxth",
+	ExtUXTW: "uxtw", ExtSXTW: "sxtw",
+	ExtUXTX: "uxtx", ExtSXTX: "sxtx",
 }
 
 // String returns the lowercase ARM64 extension mnemonic (uxtb, sxtw, etc).
@@ -148,4 +146,48 @@ func (e Extension) String() string {
 	}
 
 	return fmt.Sprintf("Extension(%#03X)", uint8(e))
+}
+
+// Condition represents ARM64 condition codes used in conditional
+// compare, conditional select, and branch instructions.
+type Condition uint8
+
+const (
+	CondEQ Condition = 0x0 // equal (Z=1)
+	CondNE Condition = 0x1 // not equal (Z=0)
+	CondCS Condition = 0x2 // carry set / unsigned higher or same (C=1)
+	CondHS Condition = 0x2 // alias for CS
+	CondCC Condition = 0x3 // carry clear / unsigned lower (C=0)
+	CondLO Condition = 0x3 // alias for CC
+	CondMI Condition = 0x4 // minus / negative (N=1)
+	CondPL Condition = 0x5 // plus / positive or zero (N=0)
+	CondVS Condition = 0x6 // overflow (V=1)
+	CondVC Condition = 0x7 // no overflow (V=0)
+	CondHI Condition = 0x8 // unsigned higher (C=1 && Z=0)
+	CondLS Condition = 0x9 // unsigned lower or same (!(C=1 && Z=0))
+	CondGE Condition = 0xA // signed greater or equal (N=V)
+	CondLT Condition = 0xB // signed less than (N!=V)
+	CondGT Condition = 0xC // signed greater than (Z=0 && N=V)
+	CondLE Condition = 0xD // signed less or equal (!(Z=0 && N=V))
+	CondAL Condition = 0xE // always
+	CondNV Condition = 0xF // always (identical to AL)
+)
+
+var conds = map[Condition]string{
+	CondEQ: "eq", CondNE: "ne",
+	CondCS: "cs", CondCC: "cc",
+	CondMI: "mi", CondPL: "pl",
+	CondVS: "vs", CondVC: "vc",
+	CondHI: "hi", CondLS: "ls",
+	CondGE: "ge", CondLT: "lt",
+	CondGT: "gt", CondLE: "le",
+	CondAL: "al", CondNV: "nv",
+}
+
+func (c Condition) String() string {
+	if name, ok := conds[c]; ok {
+		return name
+	}
+
+	return fmt.Sprintf("Condition(%#03X)", uint8(c))
 }
