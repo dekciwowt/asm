@@ -256,4 +256,20 @@ func TestEncoding(t *testing.T) {
 	}
 
 	dpRotate.Test(t)
+
+	dpEvaluate := instructionTests[DataProcEvaluate]{
+		{SETF8(X0), 0x3A00080D},
+		{SETF16(X0), 0x3A00480D},
+	}
+
+	dpEvaluate.Test(t)
+
+	dpCondCompReg := instructionTests[DataProcCondCompReg]{
+		{CCMN(W0, 0x1, CondEQ), 0x3A400001},
+		{CCMP(W0, 0x1, CondEQ), 0x7A400001},
+		{CCMN(X0, 0x1, CondEQ), 0xBA400001},
+		{CCMP(X0, 0x1, CondEQ), 0xFA400001},
+	}
+
+	dpCondCompReg.Test(t)
 }

@@ -2,16 +2,18 @@ package arm64
 
 import "fmt"
 
-// DataProc3Source represents a Data-Processing (3 source) instruction of the ARM64 instruction set
+// DataProc3Source represents a Data-Processing (3 source) instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
-//	31   30  29  28-24     23-21  20-16      15  14-10      9-5        4-0
-//	+----+---+---+---------+------+----------+---+----------+----------+----------+
-//	| sf | 0 | 0 |  11011  | opt2 |    Rm    | o |    Ra    |    Rn    |    Rd    |
-//	+----+---+---+---------+------+----------+---+----------+----------+----------+
+//		31   30  29  28-24     23-21  20-16      15  14-10      9-5        4-0
+//		+----+---+---+---------+------+----------+---+----------+----------+----------+
+//		| sf | 0 | 0 |  11011  | opt2 |    Rm    | o |    Ra    |    Rn    |    Rd    |
+//		+----+---+---+---------+------+----------+---+----------+----------+----------+
 //
-// * o encoded as first bit of the opt4 (opt4 & 0x20) and used as identity of the operation kind
+//	  - o encoded as first bit of the opt4 (opt4 & 0x20) and used as identity of
+//	    the operation kind
 type DataProc3Source Instruction
 
 var (
@@ -274,7 +276,8 @@ func (i DataProc2Source) String() string {
 	return fmt.Sprintf("%032b", i)
 }
 
-// DataProc1Source represents a Data-Processing (1 source) instruction of the ARM64 instruction set
+// DataProc1Source represents a Data-Processing (1 source) instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
@@ -466,16 +469,18 @@ func (i DataProc1Source) String() string {
 	return fmt.Sprintf("%032b", i)
 }
 
-// DataProcLogicReg represents a Logical (shifted register) instruction of the ARM64 instruction set
+// DataProcLogicReg represents a Logical (shifted register) instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
-//	31   30-29 28-24     23-22  21    20-16      15-10      9-5        4-0
-//	+----+-----+---------+------+-----+----------+----------+----------+----------+
-//	| sf | opc |  01010  |  sh  |  N  |    Rm    |   imm6   |    Rn    |    Rd    |
-//	+----+-----+---------+------+-----+----------+----------+----------+----------+
+//		31   30-29 28-24     23-22  21    20-16      15-10      9-5        4-0
+//		+----+-----+---------+------+-----+----------+----------+----------+----------+
+//		| sf | opc |  01010  |  sh  |  N  |    Rm    |   imm6   |    Rn    |    Rd    |
+//		+----+-----+---------+------+-----+----------+----------+----------+----------+
 //
-// * N encoded as last bit of the opt2 (opt2 & 0x1) and used as identity of the operation kind
+//	  - N encoded as last bit of the opt2 (opt2 & 0x1) and used as identity of
+//	    the operation kind
 type DataProcLogicReg Instruction
 
 var (
@@ -580,7 +585,8 @@ func (i DataProcLogicReg) String() string {
 	return fmt.Sprintf("%032b", i)
 }
 
-// DataProcArithReg represents an Add/substract instruction of the ARM64 instruction set
+// DataProcArithReg represents an Add/substract instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
@@ -702,7 +708,8 @@ func (i DataProcArithReg) String() string {
 	return fmt.Sprintf("%032b", i)
 }
 
-// DataProcArithWithCarry represents an Add/substract (with carry) instruction of the ARM64 instruction set
+// DataProcArithWithCarry represents an Add/substract (with carry) instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
@@ -780,7 +787,8 @@ func (i DataProcArithWithCarry) String() string {
 	return fmt.Sprintf("%032b", i)
 }
 
-// DataProcArithCkPtr represents an Add/substract (checked pointer) instruction of the ARM64 instruction set
+// DataProcArithCkPtr represents an Add/substract (checked pointer) instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
@@ -858,7 +866,8 @@ func (i DataProcArithCkPtr) String() string {
 	return fmt.Sprintf("%032b", i)
 }
 
-// DataProcRotate represents a rotate right into flags instruction of the ARM64 instruction set
+// DataProcRotate represents a rotate right into flags instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
@@ -923,3 +932,128 @@ func (i DataProcRotate) String() string {
 
 	return fmt.Sprintf("%032b", i)
 }
+
+// DataProcRotate represents a rotate right into flags instruction of
+// the ARM64 instruction set
+//
+// Layout:
+//
+//	31   30   29  28-24      23-21   20-15    14   13-10    9-5      4   3-0
+//	+----+----+---+----------+-------+--------+----+--------+--------+---+--------+
+//	| sf | op | S |  11010   |  000  | opcode | sz |  0010  |   Rn   | 0 |  mask  |
+//	+----+----+---+----------+-------+--------+----+--------+--------+---+--------+
+type DataProcEvaluate Instruction
+
+var ( // feature FlagM
+	instSETF8  = identity[DataProcEvaluate](0, 0, 1, catDataProcNSources, 0x0, 0x0, 0x02, 0x0, 0xD)
+	instSETF16 = identity[DataProcEvaluate](0, 0, 1, catDataProcNSources, 0x0, 0x0, 0x12, 0x0, 0xD)
+)
+
+func (i DataProcEvaluate) Identity() Instruction {
+	sf := get[uint8](i, sfMask, sfPos)
+	op := get[uint8](i, opMask, opPos)
+	s := get[uint8](i, sMask, sPos)
+	opt1 := get[uint8](i, opt1Mask, opt1Pos)
+	opt4 := get[uint8](i, opt4Mask, opt4Pos)
+	opt6 := get[uint8](i, opt6Mask, opt6Pos)
+
+	return identity[Instruction](sf, op, s, opt1, 0x0, 0x0, opt4, 0x0, opt6)
+}
+
+func (i DataProcEvaluate) WithRn(rn Register) DataProcEvaluate {
+	return setReg(i, rn, opt5Mask, opt5Pos)
+}
+
+func (i DataProcEvaluate) Rn() Register {
+	return getReg(i, opt5Mask, opt5Pos)
+}
+
+func (i DataProcEvaluate) Feature() Feature {
+	return FeatFlagM
+}
+
+var dataProcEvaluateMnemonics = map[Instruction]string{
+	Instruction(instSETF8):  "SETF8",
+	Instruction(instSETF16): "SETF16",
+}
+
+func (i DataProcEvaluate) String() string {
+	ident := i.Identity()
+	if mnemonic, ok := dataProcEvaluateMnemonics[ident]; ok {
+		return fmt.Sprintf("%s %s", mnemonic, i.Rn())
+	}
+
+	return fmt.Sprintf("%032b", i)
+}
+
+// DataProcCondCompReg represents a conditional compare (register) instruction
+// of the ARM64 instruction set
+//
+// Layout:
+//
+//	31   30   29  28-24     23-21   20-16    15-12  11  10   9-5    4    3-0
+//	+----+----+---+---------+-------+--------+------+---+----+------+----+--------+
+//	| sf | op | S |  11010  |  010  | opcode | cond | 0 | o2 |  Rn  | o3 |  mask  |
+//	+----+----+---+---------+-------+--------+----------+----+------+----+--------+
+type DataProcCondCompReg Instruction
+
+var ( // feature FlagM
+	instCCMNw = identity[DataProcCondCompReg](0, 0, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+	instCCMPw = identity[DataProcCondCompReg](0, 1, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+	instCCMNx = identity[DataProcCondCompReg](1, 0, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+	instCCMPx = identity[DataProcCondCompReg](1, 1, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+)
+
+func (i DataProcCondCompReg) Identity() Instruction {
+	sf := get[uint8](i, sfMask, sfPos)
+	op := get[uint8](i, opMask, opPos)
+	s := get[uint8](i, sMask, sPos)
+	opt1 := get[uint8](i, opt1Mask, opt1Pos)
+
+	return identity[Instruction](sf, op, s, opt1, 0x2, 0x0, 0x0, 0x0, 0x0)
+}
+
+func (i DataProcCondCompReg) WithRn(rn Register) DataProcCondCompReg {
+	return setReg(i, rn, opt5Mask, opt5Pos)
+}
+
+func (i DataProcCondCompReg) Rn() Register {
+	return getReg(i, opt5Mask, opt5Pos)
+}
+
+func (i DataProcCondCompReg) WithCondition(mask uint8, cond Condition) DataProcCondCompReg {
+	i = set(i, cond, 0xF, 12)
+	i = set(i, mask, 0xF, 0)
+	return i
+}
+
+func (i DataProcCondCompReg) Condition() (uint8, Condition) {
+	cond := get[Condition](i, 0xF, 12)
+	mask := get[uint8](i, 0xF, 0)
+	return mask, cond
+}
+
+func (i DataProcCondCompReg) Feature() Feature {
+	return FeatNone
+}
+
+var dataProcCondCompRegMnemonics = map[Instruction]string{
+	Instruction(instCCMNw): "CCMN",
+	Instruction(instCCMPw): "CCMP",
+	Instruction(instCCMNx): "CCMN",
+	Instruction(instCCMPx): "CCMP",
+}
+
+func (i DataProcCondCompReg) String() string {
+	ident := i.Identity()
+	if mnemonic, ok := dataProcCondCompRegMnemonics[ident]; ok {
+		mask, cond := i.Condition()
+		return fmt.Sprintf("%s %s, #%#X, %s", mnemonic, i.Rn(), mask, cond)
+	}
+
+	return fmt.Sprintf("%032b", i)
+}
+
+type DataProcCondCompImm Instruction
+
+type DataProcCondSelect Instruction

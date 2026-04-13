@@ -560,3 +560,29 @@ func RMIF(rn Register, shift, mask uint8) DataProcRotate {
 	var i DataProcRotate = instRMIF
 	return i.WithRn(rn).WithShift(shift).WithMask(mask)
 }
+
+func SETF8(rn Register) DataProcEvaluate {
+	var i DataProcEvaluate = instSETF8
+	return i.WithRn(rn)
+}
+
+func SETF16(rn Register) DataProcEvaluate {
+	var i DataProcEvaluate = instSETF16
+	return i.WithRn(rn)
+}
+
+func CCMN(rn Register, mask uint8, cond Condition) DataProcCondCompReg {
+	var i DataProcCondCompReg
+	if i = instCCMNw; w31 < rn {
+		i = instCCMNx
+	}
+	return i.WithRn(rn).WithCondition(mask, cond)
+}
+
+func CCMP(rn Register, mask uint8, cond Condition) DataProcCondCompReg {
+	var i DataProcCondCompReg
+	if i = instCCMPw; w31 < rn {
+		i = instCCMPx
+	}
+	return i.WithRn(rn).WithCondition(mask, cond)
+}
