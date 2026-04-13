@@ -2,7 +2,7 @@ package arm64
 
 func MADD(rd, rn, rm, ra Register) DataProc3Source {
 	var i DataProc3Source
-	if i = instMADDw; W30 < rd {
+	if i = instMADDw; w31 < rd {
 		i = instMADDx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm).WithRa(ra)
@@ -10,24 +10,10 @@ func MADD(rd, rn, rm, ra Register) DataProc3Source {
 
 func MSUB(rd, rn, rm, ra Register) DataProc3Source {
 	var i DataProc3Source
-	if i = instMSUBw; W30 < rd {
+	if i = instMSUBw; w31 < rd {
 		i = instMSUBx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm).WithRa(ra)
-}
-
-func MUL(rd, rn, rm Register) DataProc3Source {
-	if W30 < rd {
-		return MADD(rd, rn, rm, XZR)
-	}
-	return MADD(rd, rn, rm, WZR)
-}
-
-func MNEG(rd, rn, rm Register) DataProc3Source {
-	if W30 < rd {
-		return MSUB(rd, rn, rm, XZR)
-	}
-	return MSUB(rd, rn, rm, WZR)
 }
 
 func SMADDL(rd, rn, rm, ra Register) DataProc3Source {
@@ -80,7 +66,7 @@ func MSUBPT(rd, rn, rm, ra Register) DataProc3Source {
 
 func UDIV(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instUDIVw; W30 < rd {
+	if i = instUDIVw; w31 < rd {
 		i = instUDIVx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -88,7 +74,7 @@ func UDIV(rd, rn, rm Register) DataProc2Source {
 
 func SDIV(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instSDIVw; W30 < rd {
+	if i = instSDIVw; w31 < rd {
 		i = instSDIVx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -96,7 +82,7 @@ func SDIV(rd, rn, rm Register) DataProc2Source {
 
 func LSLV(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instLSLVw; W30 < rd {
+	if i = instLSLVw; w31 < rd {
 		i = instLSLVx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -104,7 +90,7 @@ func LSLV(rd, rn, rm Register) DataProc2Source {
 
 func LSRV(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instLSRVw; W30 < rd {
+	if i = instLSRVw; w31 < rd {
 		i = instLSRVx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -112,7 +98,7 @@ func LSRV(rd, rn, rm Register) DataProc2Source {
 
 func ASRV(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instASRVw; W30 < rd {
+	if i = instASRVw; w31 < rd {
 		i = instASRVx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -120,7 +106,7 @@ func ASRV(rd, rn, rm Register) DataProc2Source {
 
 func RORV(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instRORVw; W30 < rd {
+	if i = instRORVw; w31 < rd {
 		i = instRORVx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -168,7 +154,7 @@ func CRC32CX(rd, rn, rm Register) DataProc2Source {
 
 func SMAX(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instSMAXw; W30 < rd {
+	if i = instSMAXw; w31 < rd {
 		i = instSMAXx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -176,7 +162,7 @@ func SMAX(rd, rn, rm Register) DataProc2Source {
 
 func UMAX(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instUMAXw; W30 < rd {
+	if i = instUMAXw; w31 < rd {
 		i = instUMAXx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -184,7 +170,7 @@ func UMAX(rd, rn, rm Register) DataProc2Source {
 
 func SMIN(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instSMINw; W30 < rd {
+	if i = instSMINw; w31 < rd {
 		i = instSMINx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -192,7 +178,7 @@ func SMIN(rd, rn, rm Register) DataProc2Source {
 
 func UMIN(rd, rn, rm Register) DataProc2Source {
 	var i DataProc2Source
-	if i = instUMINw; W30 < rd {
+	if i = instUMINw; w31 < rd {
 		i = instUMINx
 	}
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
@@ -225,7 +211,7 @@ func PACGA(rd, rn, rm Register) DataProc2Source {
 
 func RBIT(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instRBITw; W30 < rd {
+	if i = instRBITw; w31 < rd {
 		i = instRBITx
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -233,7 +219,7 @@ func RBIT(rd, rn Register) DataProc1Source {
 
 func REV16(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instREV16w; W30 < rd {
+	if i = instREV16w; w31 < rd {
 		i = instREV16x
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -246,7 +232,7 @@ func REV32(rd, rn Register) DataProc1Source {
 
 func REV(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instREVw; W30 < rd {
+	if i = instREVw; w31 < rd {
 		i = instREVx
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -254,7 +240,7 @@ func REV(rd, rn Register) DataProc1Source {
 
 func CLZ(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instCLZw; W30 < rd {
+	if i = instCLZw; w31 < rd {
 		i = instCLZx
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -262,7 +248,7 @@ func CLZ(rd, rn Register) DataProc1Source {
 
 func CLS(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instCLSw; W30 < rd {
+	if i = instCLSw; w31 < rd {
 		i = instCLSx
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -270,7 +256,7 @@ func CLS(rd, rn Register) DataProc1Source {
 
 func CTZ(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instCTZw; W30 < rd {
+	if i = instCTZw; w31 < rd {
 		i = instCTZx
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -278,7 +264,7 @@ func CTZ(rd, rn Register) DataProc1Source {
 
 func CNT(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instCNTw; W30 < rd {
+	if i = instCNTw; w31 < rd {
 		i = instCNTx
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -286,7 +272,7 @@ func CNT(rd, rn Register) DataProc1Source {
 
 func ABS(rd, rn Register) DataProc1Source {
 	var i DataProc1Source
-	if i = instABSw; W30 < rd {
+	if i = instABSw; w31 < rd {
 		i = instABSx
 	}
 	return i.WithRd(rd).WithRn(rn)
@@ -380,4 +366,192 @@ func XPACI(rd Register) DataProc1Source {
 func XPACD(rd Register) DataProc1Source {
 	var i DataProc1Source = instXPACD
 	return i.WithRd(rd)
+}
+
+func PACNBIASPPC(rd Register) DataProc1Source {
+	var i DataProc1Source = instPACNBIASPPC
+	return i.WithRd(rd)
+}
+
+func PACNBIBSPPC(rd Register) DataProc1Source {
+	var i DataProc1Source = instPACNBIBSPPC
+	return i.WithRd(rd)
+}
+
+func PACIA171615(rd Register) DataProc1Source {
+	var i DataProc1Source = instPACIA171615
+	return i.WithRd(rd)
+}
+
+func PACIB171615(rd Register) DataProc1Source {
+	var i DataProc1Source = instPACIB171615
+	return i.WithRd(rd)
+}
+
+func AUTIASPPCR(rd Register) DataProc1Source {
+	var i DataProc1Source = instAUTIASPPCR
+	return i.WithRd(rd)
+}
+
+func AUTIBSPPCR(rd Register) DataProc1Source {
+	var i DataProc1Source = instAUTIBSPPCR
+	return i.WithRd(rd)
+}
+
+func PACIASPPC(rd Register) DataProc1Source {
+	var i DataProc1Source = instPACIASPPC
+	return i.WithRd(rd)
+}
+
+func PACIBSPPC(rd Register) DataProc1Source {
+	var i DataProc1Source = instPACIBSPPC
+	return i.WithRd(rd)
+}
+
+func AUTIA171615(rd Register) DataProc1Source {
+	var i DataProc1Source = instAUTIA171615
+	return i.WithRd(rd)
+}
+
+func AUTIB171615(rd Register) DataProc1Source {
+	var i DataProc1Source = instAUTIB171615
+	return i.WithRd(rd)
+}
+
+func AND(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instANDw; w31 < rd {
+		i = instANDx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func BIC(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instBICw; w31 < rd {
+		i = instBICx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ORR(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instORRw; w31 < rd {
+		i = instORRx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ORN(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instORNw; w31 < rd {
+		i = instORNx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func EOR(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instEORw; w31 < rd {
+		i = instEORx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func EON(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instEONw; w31 < rd {
+		i = instEONx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ANDS(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instANDSw; w31 < rd {
+		i = instANDSx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func BICS(rd, rn, rm Register) DataProcLogicReg {
+	var i DataProcLogicReg
+	if i = instBICSw; w31 < rd {
+		i = instBICSx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ADD(rd, rn, rm Register) DataProcArithReg {
+	var i DataProcArithReg
+	if i = instADDw; w31 < rd {
+		i = instADDx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ADDS(rd, rn, rm Register) DataProcArithReg {
+	var i DataProcArithReg
+	if i = instADDSw; w31 < rd {
+		i = instADDSx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func SUB(rd, rn, rm Register) DataProcArithReg {
+	var i DataProcArithReg
+	if i = instSUBw; w31 < rd {
+		i = instSUBx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func SUBS(rd, rn, rm Register) DataProcArithReg {
+	var i DataProcArithReg
+	if i = instSUBSw; w31 < rd {
+		i = instSUBSx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ADC(rd, rn, rm Register) DataProcArithWithCarry {
+	var i DataProcArithWithCarry
+	if i = instADCw; w31 < rd {
+		i = instADCx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ADCS(rd, rn, rm Register) DataProcArithWithCarry {
+	var i DataProcArithWithCarry
+	if i = instADCSw; w31 < rd {
+		i = instADCSx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func SBC(rd, rn, rm Register) DataProcArithWithCarry {
+	var i DataProcArithWithCarry
+	if i = instSBCw; w31 < rd {
+		i = instSBCx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func SBCS(rd, rn, rm Register) DataProcArithWithCarry {
+	var i DataProcArithWithCarry
+	if i = instSBCSw; w31 < rd {
+		i = instSBCSx
+	}
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func ADDPT(rd, rn, rm Register) DataProcArithCkPtr {
+	var i DataProcArithCkPtr = instADDPT
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func SUBPT(rd, rn, rm Register) DataProcArithCkPtr {
+	var i DataProcArithCkPtr = instSUBPT
+	return i.WithRd(rd).WithRn(rn).WithRm(rm)
 }

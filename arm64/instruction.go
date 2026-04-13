@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Data-Processing instruction layout
+// Instruction represents a common layout of the ARM64 instruction bytecode
 //
 //	31   30   29  28-24      23-21  20-16      15-10        9-5        4-0
 //	+----+----+---+----------+------+----------+------------+----------+----------+
@@ -51,7 +51,6 @@ const (
 	catDataProcArithReg category = 0x0B // Add/subtract (shifted/extended register)
 	catDataProcArithImm category = 0x11 // Add/subtract (immediate)
 	catDataProcLogicImm category = 0x12 // Logical (immediate) / Move wide (immediate)
-	catDataProcBitfield category = 0x13 // Bitfield / Extract
 	catDataProcNSources category = 0x1A // Add/subtract with carry, Cond compare, Cond select, DP 1/2-source
 	catDataProc3Sources category = 0x1B // Data-processing (3 source)
 )
@@ -73,23 +72,18 @@ func (c category) String() string {
 	return fmt.Sprintf("category(%b)", uint8(c))
 }
 
-var ( // Data-Processing (Logical)
-	instANDw = identity[Instruction](0x0, 0x0, 0x0, 0x0, 0x0, catDataProcLogicReg, 0, 0, 0)
-	instANDx = identity[Instruction](0x0, 0x0, 0x0, 0x0, 0x0, catDataProcLogicReg, 0, 0, 1)
-)
-
-func identity[I ~uint32, O operand](opt6, opt5, opt4, opt3, opt2, opt1, s, op, sf O) I {
+func identity[I ~uint32, O operand](sf, op, s, opt1, opt2, opt3, opt4, opt5, opt6 O) I {
 	var i I
 
-	i = set(i, opt6, opt6Mask, opt6Pos)
-	i = set(i, opt5, opt5Mask, opt5Pos)
-	i = set(i, opt4, opt4Mask, opt4Pos)
-	i = set(i, opt3, opt3Mask, opt3Pos)
-	i = set(i, opt2, opt2Mask, opt2Pos)
-	i = set(i, opt1, opt1Mask, opt1Pos)
-	i = set(i, s, sMask, sPos)
-	i = set(i, op, opMask, opPos)
 	i = set(i, sf, sfMask, sfPos)
+	i = set(i, op, opMask, opPos)
+	i = set(i, s, sMask, sPos)
+	i = set(i, opt1, opt1Mask, opt1Pos)
+	i = set(i, opt2, opt2Mask, opt2Pos)
+	i = set(i, opt3, opt3Mask, opt3Pos)
+	i = set(i, opt4, opt4Mask, opt4Pos)
+	i = set(i, opt5, opt5Mask, opt5Pos)
+	i = set(i, opt6, opt6Mask, opt6Pos)
 
 	return i
 }
@@ -100,13 +94,10 @@ type operand interface {
 	~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
-// get extracts a field from inst by shifting right by shift and masking with mask
 func get[O, I operand](inst I, mask, shift uint32) O {
 	return O((uint32(inst) >> shift) & mask)
 }
 
-// set writes `op` into instruction at the field defined by mask and shift, clearing any
-// existing bits in that field first
 func set[O, I operand](inst I, op O, mask, shift uint32) I {
 	return I((uint32(inst) & ^(mask << shift)) | ((uint32(op) << shift) & (mask << shift)))
 }

@@ -92,18 +92,20 @@ func (r Register) String() string {
 type Shift uint8
 
 const (
-	ShiftLSL Shift = 0x0 // logical shift left
-	ShiftLSR Shift = 0x1 // logical shift right
-	ShiftASR Shift = 0x2 // arithmetic shift right
+	ShiftLSL Shift = 0x0
+	ShiftLSR Shift = 0x1
+	ShiftASR Shift = 0x2
+	ShiftROR Shift = 0x3
 )
 
 var shifts = map[Shift]string{
 	ShiftLSL: "lsl",
 	ShiftLSR: "lsr",
 	ShiftASR: "asr",
+	ShiftROR: "ror",
 }
 
-// String returns the lowercase ARM64 shift mnemonic (lsl, lsr, asr)
+// String returns the lowercase ARM64 shift mnemonic
 // Returns a formatted fallback string if the shift is not recognized
 func (s Shift) String() string {
 	if name, ok := shifts[s]; ok {
