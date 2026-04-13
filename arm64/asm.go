@@ -368,54 +368,54 @@ func XPACD(rd Register) DataProc1Source {
 	return i.WithRd(rd)
 }
 
-func PACNBIASPPC(rd Register) DataProc1Source {
+func PACNBIASPPC() DataProc1Source {
 	var i DataProc1Source = instPACNBIASPPC
-	return i.WithRd(rd)
+	return i
 }
 
-func PACNBIBSPPC(rd Register) DataProc1Source {
+func PACNBIBSPPC() DataProc1Source {
 	var i DataProc1Source = instPACNBIBSPPC
-	return i.WithRd(rd)
+	return i
 }
 
-func PACIA171615(rd Register) DataProc1Source {
+func PACIA171615() DataProc1Source {
 	var i DataProc1Source = instPACIA171615
-	return i.WithRd(rd)
+	return i
 }
 
-func PACIB171615(rd Register) DataProc1Source {
+func PACIB171615() DataProc1Source {
 	var i DataProc1Source = instPACIB171615
-	return i.WithRd(rd)
+	return i
 }
 
-func AUTIASPPCR(rd Register) DataProc1Source {
+func AUTIASPPCR() DataProc1Source {
 	var i DataProc1Source = instAUTIASPPCR
-	return i.WithRd(rd)
+	return i
 }
 
-func AUTIBSPPCR(rd Register) DataProc1Source {
+func AUTIBSPPCR() DataProc1Source {
 	var i DataProc1Source = instAUTIBSPPCR
-	return i.WithRd(rd)
+	return i
 }
 
-func PACIASPPC(rd Register) DataProc1Source {
+func PACIASPPC() DataProc1Source {
 	var i DataProc1Source = instPACIASPPC
-	return i.WithRd(rd)
+	return i
 }
 
-func PACIBSPPC(rd Register) DataProc1Source {
+func PACIBSPPC() DataProc1Source {
 	var i DataProc1Source = instPACIBSPPC
-	return i.WithRd(rd)
+	return i
 }
 
-func AUTIA171615(rd Register) DataProc1Source {
+func AUTIA171615() DataProc1Source {
 	var i DataProc1Source = instAUTIA171615
-	return i.WithRd(rd)
+	return i
 }
 
-func AUTIB171615(rd Register) DataProc1Source {
+func AUTIB171615() DataProc1Source {
 	var i DataProc1Source = instAUTIB171615
-	return i.WithRd(rd)
+	return i
 }
 
 func AND(rd, rn, rm Register) DataProcLogicReg {
@@ -554,4 +554,9 @@ func ADDPT(rd, rn, rm Register) DataProcArithCkPtr {
 func SUBPT(rd, rn, rm Register) DataProcArithCkPtr {
 	var i DataProcArithCkPtr = instSUBPT
 	return i.WithRd(rd).WithRn(rn).WithRm(rm)
+}
+
+func RMIF(rn Register, shift, mask uint8) DataProcRotate {
+	var i DataProcRotate = instRMIF
+	return i.WithRn(rn).WithShift(shift).WithMask(mask)
 }

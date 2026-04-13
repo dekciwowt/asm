@@ -348,13 +348,19 @@ func (i DataProc1Source) Identity() Instruction {
 	opt2 := get[uint8](i, opt2Mask, opt2Pos)
 	opt3 := get[uint8](i, opt3Mask, opt3Pos)
 	opt4 := get[uint8](i, opt4Mask, opt4Pos)
-	opt5 := uint8(0x0)
 
-	if opt3 == 0x1 && 0x8 <= opt4 && opt4 <= 0xF {
+	opt5 := uint8(0x0)
+	if opt3 == 0x1 && opt4 <= 0x11 {
 		opt5 = get[uint8](i, opt5Mask, opt5Pos)
 	}
 
-	return identity[Instruction](sf, op, 0, opt1, opt2, opt3, opt4, opt5, 0x0)
+	opt6 := uint8(0x0)
+	if opt3 == 0x1 && ((0x20 <= opt4 && opt4 <= 0x29) || (0x2E <= opt4 && opt4 <= 0x2F)) {
+		opt5 = get[uint8](i, opt5Mask, opt5Pos)
+		opt6 = get[uint8](i, opt6Mask, opt6Pos)
+	}
+
+	return identity[Instruction](sf, op, 0, opt1, opt2, opt3, opt4, opt5, opt6)
 }
 
 func (i DataProc1Source) WithRd(rd Register) DataProc1Source {
@@ -374,6 +380,21 @@ func (i DataProc1Source) Rn() Register {
 }
 
 func (i DataProc1Source) Feature() Feature {
+	opt3 := get[uint8](i, opt3Mask, opt3Pos)
+	opt4 := get[uint8](i, opt4Mask, opt4Pos)
+
+	if opt3 == 0x0 && (0x6 <= opt4 && opt4 <= 0x8) {
+		return FeatCSSC
+	}
+
+	if opt3 == 0x1 && opt4 <= 0x11 {
+		return FeatPAuth
+	}
+
+	if opt3 == 0x1 && ((0x20 <= opt4 && opt4 <= 0x29) || (0x2E <= opt4 && opt4 <= 0x2F)) {
+		return FeatPAuthLR
+	}
+
 	return FeatNone
 }
 
@@ -411,6 +432,8 @@ var dataProc1SrcMnemonics = map[Instruction]string{
 	Instruction(instAUTIZB):      "AUTIZB",
 	Instruction(instAUTDZA):      "AUTDZA",
 	Instruction(instAUTDZB):      "AUTDZB",
+	Instruction(instXPACI):       "XPACI",
+	Instruction(instXPACD):       "XPACD",
 	Instruction(instPACNBIASPPC): "PACNBIASPPC",
 	Instruction(instPACNBIBSPPC): "PACNBIBSPPC",
 	Instruction(instPACIA171615): "PACIA171615",
@@ -426,6 +449,17 @@ var dataProc1SrcMnemonics = map[Instruction]string{
 func (i DataProc1Source) String() string {
 	ident := i.Identity()
 	if mnemonic, ok := dataProc1SrcMnemonics[ident]; ok {
+		opt3 := get[uint8](i, opt3Mask, opt3Pos)
+		opt4 := get[uint8](i, opt4Mask, opt4Pos)
+
+		if opt3 == 0x1 && opt4 <= 0x11 {
+			return fmt.Sprintf("%s %s", mnemonic, i.Rd())
+		}
+
+		if opt3 == 0x1 && ((0x20 <= opt4 && opt4 <= 0x29) || (0x2E <= opt4 && opt4 <= 0x2F)) {
+			return fmt.Sprintf("%s", mnemonic)
+		}
+
 		return fmt.Sprintf("%s %s, %s", mnemonic, i.Rd(), i.Rn())
 	}
 
@@ -752,7 +786,7 @@ func (i DataProcArithWithCarry) String() string {
 //
 //	31  30   29  28-24       23-21    20-16    15-13   12-10    9-5      4-0
 //	+---+----+---+-----------+--------+--------+-------+--------+--------+--------+
-//	| 1 | op | S |   01011   |  000   |   Rm   |  001  |  imm3  |   Rn   |   Rd   |
+//	| 1 | op | S |   11010   |  000   |   Rm   |  001  |  imm3  |   Rn   |   Rd   |
 //	+---+----+---+-----------+--------+--------+-------+--------+--------+--------+
 type DataProcArithCkPtr Instruction
 
@@ -762,12 +796,11 @@ var ( // feature CPA
 )
 
 func (i DataProcArithCkPtr) Identity() Instruction {
-	sf := get[uint8](i, sfMask, sfPos)
 	op := get[uint8](i, opMask, opPos)
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
 
-	return identity[Instruction](sf, op, s, opt1, 0x0, 0x0, 0x8, 0x0, 0x0)
+	return identity[Instruction](1, op, s, opt1, 0x0, 0x0, 0x8, 0x0, 0x0)
 }
 
 func (i DataProcArithCkPtr) WithRd(rd Register) DataProcArithCkPtr {
@@ -820,6 +853,72 @@ func (i DataProcArithCkPtr) String() string {
 		}
 
 		return fmt.Sprintf("%s %s, %s, %s", mnemonic, i.Rd(), i.Rn(), i.Rm())
+	}
+
+	return fmt.Sprintf("%032b", i)
+}
+
+// DataProcRotate represents a rotate right into flags instruction of the ARM64 instruction set
+//
+// Layout:
+//
+//	31   30   29  28-24        23-21   20-15      14-10     9-5      4   3-0
+//	+----+----+---+------------+-------+----------+---------+--------+---+--------+
+//	| sf | op | S |   11010    |  000  |   imm6   |  00001  |   Rn   | 0 |  mask  |
+//	+----+----+---+------------+-------+----------+---------+--------+---+--------+
+type DataProcRotate Instruction
+
+var ( // feature FlagM
+	instRMIF = identity[DataProcRotate](1, 0, 1, catDataProcNSources, 0x0, 0x0, 0x1, 0x0, 0x0)
+)
+
+func (i DataProcRotate) Identity() Instruction {
+	sf := get[uint8](i, sfMask, sfPos)
+	op := get[uint8](i, opMask, opPos)
+	s := get[uint8](i, sMask, sPos)
+	opt1 := get[uint8](i, opt1Mask, opt1Pos)
+
+	return identity[Instruction](sf, op, s, opt1, 0x0, 0x0, 0x1, 0x0, 0x0)
+}
+
+func (i DataProcRotate) WithMask(mask uint8) DataProcRotate {
+	return set(i, mask, 0xF, opt6Pos)
+}
+
+func (i DataProcRotate) Mask() uint8 {
+	return get[uint8](i, 0xF, opt6Pos)
+}
+
+func (i DataProcRotate) WithRn(rn Register) DataProcRotate {
+	return setReg(i, rn, opt5Mask, opt5Pos)
+}
+
+func (i DataProcRotate) Rn() Register {
+	return getReg(i, opt5Mask, opt5Pos)
+}
+
+func (i DataProcRotate) WithShift(shift uint8) DataProcRotate {
+	return set(i, shift, 0x1F, 15)
+}
+
+func (i DataProcRotate) Shift() uint8 {
+	return get[uint8](i, 0x1F, 15)
+}
+
+func (i DataProcRotate) Feature() Feature {
+	return FeatFlagM
+}
+
+var dataProcRotateMnemonics = map[Instruction]string{
+	Instruction(instRMIF): "RMIF",
+}
+
+func (i DataProcRotate) String() string {
+	ident := i.Identity()
+	if mnemonic, ok := dataProcRotateMnemonics[ident]; ok {
+		shift := i.Shift()
+		mask := i.Mask()
+		return fmt.Sprintf("%s %s, #%#X, #%#X", mnemonic, i.Rn(), shift, mask)
 	}
 
 	return fmt.Sprintf("%032b", i)

@@ -147,6 +147,18 @@ func TestEncoding(t *testing.T) {
 		{AUTIZB(X0), 0xDAC137E0},
 		{AUTDZA(X0), 0xDAC13BE0},
 		{AUTDZB(X0), 0xDAC13FE0},
+		{XPACI(X0), 0xDAC143E0},
+		{XPACD(X0), 0xDAC147E0},
+		{PACNBIASPPC(), 0xDAC183FE},
+		{PACNBIBSPPC(), 0xDAC187FE},
+		{PACIA171615(), 0xDAC18BFE},
+		{PACIB171615(), 0xDAC18FFE},
+		{AUTIASPPCR(), 0xDAC193FE},
+		{AUTIBSPPCR(), 0xDAC197FE},
+		{PACIASPPC(), 0xDAC1A3FE},
+		{PACIBSPPC(), 0xDAC1A7FE},
+		{AUTIA171615(), 0xDAC1BBFE},
+		{AUTIB171615(), 0xDAC1BFFE},
 	}
 
 	dp1Source.Test(t)
@@ -238,4 +250,10 @@ func TestEncoding(t *testing.T) {
 	}
 
 	dpArithCkPtr.Test(t)
+
+	dpRotate := instructionTests[DataProcRotate]{
+		{RMIF(X0, 0x1, 0x3), 0xBA008403},
+	}
+
+	dpRotate.Test(t)
 }
