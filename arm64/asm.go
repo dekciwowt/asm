@@ -571,18 +571,32 @@ func SETF16(rn Register) DataProcEvaluate {
 	return i.WithRn(rn)
 }
 
-func CCMN(rn Register, mask uint8, cond Condition) DataProcCondCompReg {
-	var i DataProcCondCompReg
+func CCMN[O Register | uint8](rn Register, rm O, mask uint8, cond Condition) DataProcCond {
+	var i DataProcCond
 	if i = instCCMNw; w31 < rn {
 		i = instCCMNx
 	}
-	return i.WithRn(rn).WithCondition(mask, cond)
+
+	i = i.WithRn(rn).WithCondition(mask, cond)
+
+	if rmReg, ok := any(rm).(Register); ok {
+		return i.WithRm(rmReg)
+	}
+
+	return i.WithImmediate(uint8(rm))
 }
 
-func CCMP(rn Register, mask uint8, cond Condition) DataProcCondCompReg {
-	var i DataProcCondCompReg
+func CCMP[O Register | uint8](rn Register, rm O, mask uint8, cond Condition) DataProcCond {
+	var i DataProcCond
 	if i = instCCMPw; w31 < rn {
 		i = instCCMPx
 	}
-	return i.WithRn(rn).WithCondition(mask, cond)
+
+	i = i.WithRn(rn).WithCondition(mask, cond)
+
+	if rmReg, ok := any(rm).(Register); ok {
+		return i.WithRm(rmReg)
+	}
+
+	return i.WithImmediate(uint8(rm))
 }

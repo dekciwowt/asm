@@ -264,11 +264,15 @@ func TestEncoding(t *testing.T) {
 
 	dpEvaluate.Test(t)
 
-	dpCondCompReg := instructionTests[DataProcCondCompReg]{
-		{CCMN(W0, 0x1, CondEQ), 0x3A400001},
-		{CCMP(W0, 0x1, CondEQ), 0x7A400001},
-		{CCMN(X0, 0x1, CondEQ), 0xBA400001},
-		{CCMP(X0, 0x1, CondEQ), 0xFA400001},
+	dpCondCompReg := instructionTests[DataProcCond]{
+		{CCMN(W0, W1, 0x1, CondEQ), 0x3A410001},
+		{CCMP(W0, W1, 0x1, CondEQ), 0x7A410001},
+		{CCMN(W0, uint8(0x1), 0x2, CondEQ), 0x3A410802},
+		{CCMP(W0, uint8(0x1), 0x2, CondEQ), 0x7A410802},
+		{CCMN(X0, X1, 0x1, CondEQ), 0xBA410001},
+		{CCMP(X0, X1, 0x1, CondEQ), 0xFA410001},
+		{CCMN(X0, uint8(0x1), 0x2, CondEQ), 0xBA410802},
+		{CCMP(X0, uint8(0x1), 0x2, CondEQ), 0xFA410802},
 	}
 
 	dpCondCompReg.Test(t)

@@ -7,13 +7,10 @@ import "fmt"
 //
 // Layout:
 //
-//		31   30  29  28-24     23-21  20-16      15  14-10      9-5        4-0
-//		+----+---+---+---------+------+----------+---+----------+----------+----------+
-//		| sf | 0 | 0 |  11011  | opt2 |    Rm    | o |    Ra    |    Rn    |    Rd    |
-//		+----+---+---+---------+------+----------+---+----------+----------+----------+
-//
-//	  - o encoded as first bit of the opt4 (opt4 & 0x20) and used as identity of
-//	    the operation kind
+//	31   30  29  28-24     23-21  20-16      15  14-10      9-5        4-0
+//	+----+---+---+---------+------+----------+---+----------+----------+----------+
+//	| sf | 0 | 0 |  11011  | opt2 |    Rm    | o |    Ra    |    Rn    |    Rd    |
+//	+----+---+---+---------+------+----------+---+----------+----------+----------+
 type DataProc3Source Instruction
 
 var (
@@ -39,9 +36,12 @@ func (i DataProc3Source) Identity() Instruction {
 	sf := get[uint8](i, sfMask, sfPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
 	opt2 := get[uint8](i, opt2Mask, opt2Pos)
-	opt4 := get[uint8](i, opt4Mask, opt4Pos)
 
-	return identity[Instruction](sf, 0, 0, opt1, opt2, 0x0, opt4&0x20, 0x0, 0x0)
+	// opt4 := 0xxxxx
+	o := get[uint8](i, 0x1, 15)
+	opt4 := o << 5
+
+	return identity[Instruction](sf, 0, 0, opt1, opt2, 0x0, opt4, 0x0, 0x0)
 }
 
 func (i DataProc3Source) WithRd(rd Register) DataProc3Source {
@@ -346,7 +346,6 @@ var ( // feature PAuthLR
 
 func (i DataProc1Source) Identity() Instruction {
 	sf := get[uint8](i, sfMask, sfPos)
-	op := get[uint8](i, opMask, opPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
 	opt2 := get[uint8](i, opt2Mask, opt2Pos)
 	opt3 := get[uint8](i, opt3Mask, opt3Pos)
@@ -363,7 +362,7 @@ func (i DataProc1Source) Identity() Instruction {
 		opt6 = get[uint8](i, opt6Mask, opt6Pos)
 	}
 
-	return identity[Instruction](sf, op, 0, opt1, opt2, opt3, opt4, opt5, opt6)
+	return identity[Instruction](sf, 1, 0, opt1, opt2, opt3, opt4, opt5, opt6)
 }
 
 func (i DataProc1Source) WithRd(rd Register) DataProc1Source {
@@ -474,13 +473,10 @@ func (i DataProc1Source) String() string {
 //
 // Layout:
 //
-//		31   30-29 28-24     23-22  21    20-16      15-10      9-5        4-0
-//		+----+-----+---------+------+-----+----------+----------+----------+----------+
-//		| sf | opc |  01010  |  sh  |  N  |    Rm    |   imm6   |    Rn    |    Rd    |
-//		+----+-----+---------+------+-----+----------+----------+----------+----------+
-//
-//	  - N encoded as last bit of the opt2 (opt2 & 0x1) and used as identity of
-//	    the operation kind
+//	31   30-29 28-24     23-22  21    20-16      15-10      9-5        4-0
+//	+----+-----+---------+------+-----+----------+----------+----------+----------+
+//	| sf | opc |  01010  |  sh  |  N  |    Rm    |   imm6   |    Rn    |    Rd    |
+//	+----+-----+---------+------+-----+----------+----------+----------+----------+
 type DataProcLogicReg Instruction
 
 var (
@@ -507,9 +503,12 @@ func (i DataProcLogicReg) Identity() Instruction {
 	op := get[uint8](i, opMask, opPos)
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
-	opt2 := get[uint8](i, opt2Mask, opt2Pos)
 
-	return identity[Instruction](sf, op, s, opt1, opt2&0x1, 0x0, 0x0, 0x0, 0x0)
+	// opt2 := xx0 | xx1
+	n := get[uint8](i, 0x1, 21)
+	opt2 := n
+
+	return identity[Instruction](sf, op, s, opt1, opt2, 0x0, 0x0, 0x0, 0x0)
 }
 
 func (i DataProcLogicReg) WithRd(rd Register) DataProcLogicReg {
@@ -606,14 +605,22 @@ func (i DataProcLogicReg) String() string {
 type DataProcArithReg Instruction
 
 var (
-	instADDw  = identity[DataProcArithReg](0, 0, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
-	instADDSw = identity[DataProcArithReg](0, 0, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
-	instSUBw  = identity[DataProcArithReg](0, 1, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
-	instSUBSw = identity[DataProcArithReg](0, 1, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
-	instADDx  = identity[DataProcArithReg](1, 0, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
-	instADDSx = identity[DataProcArithReg](1, 0, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
-	instSUBx  = identity[DataProcArithReg](1, 1, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
-	instSUBSx = identity[DataProcArithReg](1, 1, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instADDw   = identity[DataProcArithReg](0, 0, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instADDSw  = identity[DataProcArithReg](0, 0, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instSUBw   = identity[DataProcArithReg](0, 1, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instSUBSw  = identity[DataProcArithReg](0, 1, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instADDx   = identity[DataProcArithReg](1, 0, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instADDSx  = identity[DataProcArithReg](1, 0, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instSUBx   = identity[DataProcArithReg](1, 1, 0, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instSUBSx  = identity[DataProcArithReg](1, 1, 1, catDataProcArithReg, 0x0, 0x0, 0x0, 0x0, 0x0)
+	instADDEw  = identity[DataProcArithReg](0, 0, 0, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
+	instADDSEw = identity[DataProcArithReg](0, 0, 1, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
+	instSUBEw  = identity[DataProcArithReg](0, 1, 0, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
+	instSUBSEw = identity[DataProcArithReg](0, 1, 1, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
+	instADDEx  = identity[DataProcArithReg](1, 0, 0, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
+	instADDSEx = identity[DataProcArithReg](1, 0, 1, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
+	instSUBEx  = identity[DataProcArithReg](1, 1, 0, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
+	instSUBSEx = identity[DataProcArithReg](1, 1, 1, catDataProcArithReg, 0x1, 0x0, 0x0, 0x0, 0x0)
 )
 
 func (i DataProcArithReg) Identity() Instruction {
@@ -622,7 +629,12 @@ func (i DataProcArithReg) Identity() Instruction {
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
 
-	return identity[Instruction](sf, op, s, opt1, 0x0, 0x0, 0x0, 0x0, 0x0)
+	// opt2 := 000 | 001 | xx0
+	sh := get[uint8](i, 0x3, 22)
+	n := get[uint8](i, 0x1, 21)
+	opt2 := (sh << 1) | n
+
+	return identity[Instruction](sf, op, s, opt1, opt2, 0x0, 0x0, 0x0, 0x0)
 }
 
 func (i DataProcArithReg) WithRd(rd Register) DataProcArithReg {
@@ -679,14 +691,22 @@ func (i DataProcArithReg) Feature() Feature {
 }
 
 var dataProcArithRegMnemonics = map[Instruction]string{
-	Instruction(instADDw):  "ADD",
-	Instruction(instADDSw): "ADDS",
-	Instruction(instSUBw):  "SUB",
-	Instruction(instSUBSw): "SUBS",
-	Instruction(instADDx):  "ADD",
-	Instruction(instADDSx): "ADDS",
-	Instruction(instSUBx):  "SUB",
-	Instruction(instSUBSx): "SUBS",
+	Instruction(instADDw):   "ADD",
+	Instruction(instADDSw):  "ADDS",
+	Instruction(instSUBw):   "SUB",
+	Instruction(instSUBSw):  "SUBS",
+	Instruction(instADDx):   "ADD",
+	Instruction(instADDSx):  "ADDS",
+	Instruction(instSUBx):   "SUB",
+	Instruction(instSUBSx):  "SUBS",
+	Instruction(instADDEw):  "ADD",
+	Instruction(instADDSEw): "ADDS",
+	Instruction(instSUBEw):  "SUB",
+	Instruction(instSUBSEw): "SUBS",
+	Instruction(instADDEx):  "ADD",
+	Instruction(instADDSEx): "ADDS",
+	Instruction(instSUBEx):  "SUB",
+	Instruction(instSUBSEx): "SUBS",
 }
 
 func (i DataProcArithReg) String() string {
@@ -735,8 +755,9 @@ func (i DataProcArithWithCarry) Identity() Instruction {
 	op := get[uint8](i, opMask, opPos)
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
+	opt2 := get[uint8](i, opt2Mask, opt2Pos)
 
-	return identity[Instruction](sf, op, s, opt1, 0x0, 0x0, 0x0, 0x0, 0x0)
+	return identity[Instruction](sf, op, s, opt1, opt2, 0x0, 0x0, 0x0, 0x0)
 }
 
 func (i DataProcArithWithCarry) WithRd(rd Register) DataProcArithWithCarry {
@@ -792,10 +813,10 @@ func (i DataProcArithWithCarry) String() string {
 //
 // Layout:
 //
-//	31  30   29  28-24       23-21    20-16    15-13   12-10    9-5      4-0
-//	+---+----+---+-----------+--------+--------+-------+--------+--------+--------+
-//	| 1 | op | S |   11010   |  000   |   Rm   |  001  |  imm3  |   Rn   |   Rd   |
-//	+---+----+---+-----------+--------+--------+-------+--------+--------+--------+
+//	31   30   29  28-24      23-21    20-16    15-13   12-10    9-5      4-0
+//	+----+----+---+----------+--------+--------+-------+--------+--------+--------+
+//	| sf | op | S |  11010   |  000   |   Rm   |  001  |  imm3  |   Rn   |   Rd   |
+//	+----+----+---+----------+--------+--------+-------+--------+--------+--------+
 type DataProcArithCkPtr Instruction
 
 var ( // feature CPA
@@ -804,11 +825,17 @@ var ( // feature CPA
 )
 
 func (i DataProcArithCkPtr) Identity() Instruction {
+	sf := get[uint8](i, sfMask, sfPos)
 	op := get[uint8](i, opMask, opPos)
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
+	opt2 := get[uint8](i, opt2Mask, opt2Pos)
 
-	return identity[Instruction](1, op, s, opt1, 0x0, 0x0, 0x8, 0x0, 0x0)
+	// opt4 := 001xxx
+	fix4 := get[uint8](i, 0x7, 13)
+	opt4 := fix4 << 3
+
+	return identity[Instruction](sf, op, s, opt1, opt2, 0x0, opt4, 0x0, 0x0)
 }
 
 func (i DataProcArithCkPtr) WithRd(rd Register) DataProcArithCkPtr {
@@ -873,7 +900,7 @@ func (i DataProcArithCkPtr) String() string {
 //
 //	31   30   29  28-24        23-21   20-15      14-10     9-5      4   3-0
 //	+----+----+---+------------+-------+----------+---------+--------+---+--------+
-//	| sf | op | S |   11010    |  000  |   imm6   |  00001  |   Rn   | 0 |  mask  |
+//	| sf | op | S |   11010    |  000  |   imm6   |  00001  |   Rn   | o |  mask  |
 //	+----+----+---+------------+-------+----------+---------+--------+---+--------+
 type DataProcRotate Instruction
 
@@ -886,8 +913,12 @@ func (i DataProcRotate) Identity() Instruction {
 	op := get[uint8](i, opMask, opPos)
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
+	opt2 := get[uint8](i, opt2Mask, opt2Pos)
 
-	return identity[Instruction](sf, op, s, opt1, 0x0, 0x0, 0x1, 0x0, 0x0)
+	// opt4 := x00001
+	opt4 := uint8(0x1)
+
+	return identity[Instruction](sf, op, s, opt1, opt2, 0x0, opt4, 0x0, 0x0)
 }
 
 func (i DataProcRotate) WithMask(mask uint8) DataProcRotate {
@@ -940,7 +971,7 @@ func (i DataProcRotate) String() string {
 //
 //	31   30   29  28-24      23-21   20-15    14   13-10    9-5      4   3-0
 //	+----+----+---+----------+-------+--------+----+--------+--------+---+--------+
-//	| sf | op | S |  11010   |  000  | opcode | sz |  0010  |   Rn   | 0 |  mask  |
+//	| sf | op | S |  11010   |  000  | opcode | sz |  0010  |   Rn   | o |  mask  |
 //	+----+----+---+----------+-------+--------+----+--------+--------+---+--------+
 type DataProcEvaluate Instruction
 
@@ -954,8 +985,12 @@ func (i DataProcEvaluate) Identity() Instruction {
 	op := get[uint8](i, opMask, opPos)
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
-	opt4 := get[uint8](i, opt4Mask, opt4Pos)
-	opt6 := get[uint8](i, opt6Mask, opt6Pos)
+
+	// opt4 := x0010
+	sz := get[uint8](i, 0x1, 14)
+	opt4 := (sz << 4) | 0x2
+
+	opt6 := uint8(0xD)
 
 	return identity[Instruction](sf, op, s, opt1, 0x0, 0x0, opt4, 0x0, opt6)
 }
@@ -986,54 +1021,84 @@ func (i DataProcEvaluate) String() string {
 	return fmt.Sprintf("%032b", i)
 }
 
-// DataProcCondCompReg represents a conditional compare (register) instruction
-// of the ARM64 instruction set
+// DataProcCond represents a conditional compare (register) instruction of
+// the ARM64 instruction set
 //
 // Layout:
 //
-//	31   30   29  28-24     23-21   20-16    15-12  11  10   9-5    4    3-0
-//	+----+----+---+---------+-------+--------+------+---+----+------+----+--------+
-//	| sf | op | S |  11010  |  010  | opcode | cond | 0 | o2 |  Rn  | o3 |  mask  |
-//	+----+----+---+---------+-------+--------+----------+----+------+----+--------+
-type DataProcCondCompReg Instruction
+//	 with Rm register
+//
+//		31   30   29  28-24     23-21   20-16    15-12  11  10   9-5    4    3-0
+//		+----+----+---+---------+-------+--------+------+---+----+------+----+--------+
+//		| sf | op | S |  11010  |  010  |   Rm   | cond | 0 | o2 |  Rn  | o3 |  mask  |
+//		+----+----+---+---------+-------+--------+----------+----+------+----+--------+
+//
+//	 with immediate
+//
+//		31   30   29  28-24     23-21   20-16    15-12  11  10   9-5    4    3-0
+//		+----+----+---+---------+-------+--------+------+---+----+------+----+--------+
+//		| sf | op | S |  11010  |  010  |  imm5  | cond | 1 | o2 |  Rn  | o3 |  mask  |
+//		+----+----+---+---------+-------+--------+----------+----+------+----+--------+
+type DataProcCond Instruction
 
 var ( // feature FlagM
-	instCCMNw = identity[DataProcCondCompReg](0, 0, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
-	instCCMPw = identity[DataProcCondCompReg](0, 1, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
-	instCCMNx = identity[DataProcCondCompReg](1, 0, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
-	instCCMPx = identity[DataProcCondCompReg](1, 1, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+	instCCMNw = identity[DataProcCond](0, 0, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+	instCCMPw = identity[DataProcCond](0, 1, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+	instCCMNx = identity[DataProcCond](1, 0, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
+	instCCMPx = identity[DataProcCond](1, 1, 1, catDataProcNSources, 0x2, 0x0, 0x0, 0x0, 0x0)
 )
 
-func (i DataProcCondCompReg) Identity() Instruction {
+func (i DataProcCond) Identity() Instruction {
 	sf := get[uint8](i, sfMask, sfPos)
 	op := get[uint8](i, opMask, opPos)
 	s := get[uint8](i, sMask, sPos)
 	opt1 := get[uint8](i, opt1Mask, opt1Pos)
+	opt2 := get[uint8](i, opt2Mask, opt2Pos)
 
-	return identity[Instruction](sf, op, s, opt1, 0x2, 0x0, 0x0, 0x0, 0x0)
+	return identity[Instruction](sf, op, s, opt1, opt2, 0x0, 0x0, 0x0, 0x0)
 }
 
-func (i DataProcCondCompReg) WithRn(rn Register) DataProcCondCompReg {
+func (i DataProcCond) WithRm(rm Register) DataProcCond {
+	i = setReg(i, rm, opt3Mask, opt3Pos)
+	i = set(i, uint8(0), 0x1, 11)
+	return i
+}
+
+func (i DataProcCond) Rm() Register {
+	return getReg(i, opt3Mask, opt3Pos)
+}
+
+func (i DataProcCond) WithRn(rn Register) DataProcCond {
 	return setReg(i, rn, opt5Mask, opt5Pos)
 }
 
-func (i DataProcCondCompReg) Rn() Register {
+func (i DataProcCond) Rn() Register {
 	return getReg(i, opt5Mask, opt5Pos)
 }
 
-func (i DataProcCondCompReg) WithCondition(mask uint8, cond Condition) DataProcCondCompReg {
+func (i DataProcCond) WithCondition(mask uint8, cond Condition) DataProcCond {
 	i = set(i, cond, 0xF, 12)
 	i = set(i, mask, 0xF, 0)
 	return i
 }
 
-func (i DataProcCondCompReg) Condition() (uint8, Condition) {
+func (i DataProcCond) Condition() (uint8, Condition) {
 	cond := get[Condition](i, 0xF, 12)
 	mask := get[uint8](i, 0xF, 0)
 	return mask, cond
 }
 
-func (i DataProcCondCompReg) Feature() Feature {
+func (i DataProcCond) WithImmediate(imm uint8) DataProcCond {
+	i = set(i, imm, opt3Mask, opt3Pos)
+	i = set(i, uint8(1), 0x1, 11)
+	return i
+}
+
+func (i DataProcCond) Immediate() uint8 {
+	return get[uint8](i, opt3Mask, opt3Pos)
+}
+
+func (i DataProcCond) Feature() Feature {
 	return FeatNone
 }
 
@@ -1044,16 +1109,19 @@ var dataProcCondCompRegMnemonics = map[Instruction]string{
 	Instruction(instCCMPx): "CCMP",
 }
 
-func (i DataProcCondCompReg) String() string {
+func (i DataProcCond) String() string {
 	ident := i.Identity()
 	if mnemonic, ok := dataProcCondCompRegMnemonics[ident]; ok {
 		mask, cond := i.Condition()
-		return fmt.Sprintf("%s %s, #%#X, %s", mnemonic, i.Rn(), mask, cond)
+
+		if immf := get[uint8](i, 0x1, 11); immf == 0x1 {
+			return fmt.Sprintf("%s %s, #%#X, #%#X, %s", mnemonic, i.Rn(), i.Immediate(), mask, cond)
+		}
+
+		return fmt.Sprintf("%s %s, %s, #%#X, %s", mnemonic, i.Rn(), i.Rm(), mask, cond)
 	}
 
 	return fmt.Sprintf("%032b", i)
 }
-
-type DataProcCondCompImm Instruction
 
 type DataProcCondSelect Instruction
