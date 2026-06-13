@@ -1,0 +1,611 @@
+{
+  "arch": "aarch64",
+  "package": "aarch64",
+  "categories": [
+    {
+      "name": "ArithCarry",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "name": "op", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x1A", "size": 8, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "default": "0x0", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm"],
+        "getters": ["rd", "rn", "rm"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "ADC",
+          "function": "ADC",
+          "description": "Encodes an ADD with carry instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "ADCS",
+          "function": "ADCS",
+          "description": "Encodes an ADD with carry (setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x1" }
+          ]
+        },
+        {
+          "mnemonic": "SBC",
+          "function": "SBC",
+          "description": "Encodes a SUB with carry instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "SBCS",
+          "function": "SBCS",
+          "description": "Encodes a SUB with carry (setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x1" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ArithExt",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "name": "op", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x0B", "size": 5, "pos": 24 },
+          { "type": "uint8", "default": "0x1", "size": 3, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "ext", "name": "ext", "size": 3, "pos": 13 },
+          { "type": "uint8", "name": "amount", "size": 3, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm", "ext", "amount"],
+        "getters": ["rd", "rn", "rm", "ext", "amount"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s, %s #%d",
+            "condition": "amount != 0x0",
+            "arguments": ["mnemonic", "rd", "rn", "rm", "ext", "amount"]
+          },
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "ADD",
+          "function": "ADDExt",
+          "description": "Encodes an ADD (extended register) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "ADDS",
+          "function": "ADDSExt",
+          "description": "Encodes an ADD (extended register, setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x1" }
+          ]
+        },
+        {
+          "mnemonic": "SUB",
+          "function": "SUBExt",
+          "description": "Encodes a SUB (extended register) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "SUBS",
+          "function": "SUBSExt",
+          "description": "Encodes a SUB (extended register, setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x1" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ArithImm",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "name": "op", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x11", "size": 5, "pos": 24 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 23 },
+          { "type": "bool", "name": "shift", "size": 1, "pos": 22 },
+          { "type": "uint16", "name": "imm", "size": 12, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "imm", "shift"],
+        "getters": ["rd", "rn", "imm", "shift"],
+        "formats": [
+          {
+            "format": "%s %s, %s, #%d, LSL #12",
+            "condition": "shift",
+            "arguments": ["mnemonic", "rd", "rn", "imm"]
+          },
+          {
+            "format": "%s %s, %s, #%d",
+            "arguments": ["mnemonic", "rd", "rn", "imm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "ADD",
+          "function": "ADDImm",
+          "description": "Encodes an ADD (immediate) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "ADDS",
+          "function": "ADDSImm",
+          "description": "Encodes an ADD (immediate, setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x1" }
+          ]
+        },
+        {
+          "mnemonic": "SUB",
+          "function": "SUBImm",
+          "description": "Encodes a SUB (immediate) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "SUBS",
+          "function": "SUBSImm",
+          "description": "Encodes a SUB (immediate, setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x1" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ArithShift",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "name": "op", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x0B", "size": 5, "pos": 24 },
+          { "type": "shift", "name": "shift", "size": 2, "pos": 22 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "amount", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm", "shift", "amount"],
+        "getters": ["rd", "rn", "rm", "shift", "amount"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s, %s #%#X",
+            "condition": "amount != 0x0",
+            "arguments": ["mnemonic", "rd", "rn", "rm", "shift", "amount"]
+          },
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "ADD",
+          "function": "ADDShift",
+          "description": "Encodes an ADD (shifted register) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "ADDS",
+          "function": "ADDSShift",
+          "description": "Encodes an ADD (shifted register, setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x0" },
+            { "field": "S", "value": "0x1" }
+          ]
+        },
+        {
+          "mnemonic": "SUB",
+          "function": "SUBShift",
+          "description": "Encodes a SUB (shifted register) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "SUBS",
+          "function": "SUBSShift",
+          "description": "Encodes a SUB (shifted register, setting flags) instruction",
+          "discriminators": [
+            { "field": "op", "value": "0x1" },
+            { "field": "S", "value": "0x1" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LogicShift",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "name": "opc", "size": 2, "pos": 30 },
+          { "type": "uint8", "default": "0x0A", "size": 5, "pos": 24 },
+          { "type": "shift", "name": "shift", "size": 2, "pos": 22 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "amount", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm", "shift", "amount"],
+        "getters": ["rd", "rn", "rm", "shift", "amount"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s, %s #%#X",
+            "condition": "amount != 0x0",
+            "arguments": ["mnemonic", "rd", "rn", "rm", "shift", "amount"]
+          },
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "AND",
+          "function": "ANDShift",
+          "description": "Encodes an AND (shifted register) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x0" }]
+        },
+        {
+          "mnemonic": "ORR",
+          "function": "ORRShift",
+          "description": "Encodes an ORR (shifted register) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x1" }]
+        },
+        {
+          "mnemonic": "EOR",
+          "function": "EORShift",
+          "description": "Encodes an EOR (shifted register) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x2" }]
+        },
+        {
+          "mnemonic": "ANDS",
+          "function": "ANDSShift",
+          "description": "Encodes an AND (shifted register, setting flags) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x3" }]
+        }
+      ]
+    },
+    {
+      "name": "LogicImm",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "name": "opc", "size": 2, "pos": 30 },
+          { "type": "uint8", "default": "0x24", "size": 6, "pos": 23 },
+          { "type": "bitmask", "name": "imm", "size": 13, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "imm"],
+        "getters": ["rd", "rn", "imm"],
+        "formats": [
+          {
+            "format": "%s %s, %s, #%#X",
+            "condition": "imm != 0x0",
+            "arguments": ["mnemonic", "rd", "rn", "imm"]
+          },
+          {
+            "format": "%s %s, %s",
+            "arguments": ["mnemonic", "rd", "rn"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "AND",
+          "function": "ANDImm",
+          "description": "Encodes an AND (immediate) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x0" }]
+        },
+        {
+          "mnemonic": "ORR",
+          "function": "ORRImm",
+          "description": "Encodes an ORR (immediate) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x1" }]
+        },
+        {
+          "mnemonic": "EOR",
+          "function": "EORImm",
+          "description": "Encodes an EOR (immediate) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x2" }]
+        },
+        {
+          "mnemonic": "ANDS",
+          "function": "ANDSImm",
+          "description": "Encodes an AND (immediate, setting flags) instruction",
+          "discriminators": [{ "field": "opc", "value": "0x3" }]
+        }
+      ]
+    },
+    {
+      "name": "DataProc2",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm"],
+        "getters": ["rd", "rn", "rm"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "UDIV",
+          "function": "UDIV",
+          "description": "Encodes an UDIV instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x2" }]
+        },
+        {
+          "mnemonic": "SDIV",
+          "function": "SDIV",
+          "description": "Encodes a SDIV instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x3" }]
+        },
+        {
+          "mnemonic": "LSLV",
+          "function": "LSLV",
+          "description": "Encodes a LSLV instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x8" }]
+        },
+        {
+          "mnemonic": "LSRV",
+          "function": "LSRV",
+          "description": "Encodes a LSRV instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x9" }]
+        },
+        {
+          "mnemonic": "ASRV",
+          "function": "ASRV",
+          "description": "Encodes an ASRV instruction",
+          "discriminators": [{ "field": "opcode", "value": "0xA" }]
+        },
+        {
+          "mnemonic": "RORV",
+          "function": "RORV",
+          "description": "Encodes a RORV instruction",
+          "discriminators": [{ "field": "opcode", "value": "0xB" }]
+        }
+      ]
+    },
+    {
+      "name": "DataProc2CRC32",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          {
+            "type": "uint8",
+            "name": "sf",
+            "size": 1,
+            "pos": 31,
+            "autoset": false
+          },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm"],
+        "getters": ["rd", "rn", "rm"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "CRC32B",
+          "function": "CRC32B",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32B instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x0" },
+            { "field": "opcode", "value": "0x10" }
+          ]
+        },
+        {
+          "mnemonic": "CRC32H",
+          "function": "CRC32H",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32H instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x0" },
+            { "field": "opcode", "value": "0x11" }
+          ]
+        },
+        {
+          "mnemonic": "CRC32W",
+          "function": "CRC32W",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32W instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x0" },
+            { "field": "opcode", "value": "0x12" }
+          ]
+        },
+        {
+          "mnemonic": "CRC32CB",
+          "function": "CRC32CB",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32CB instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x0" },
+            { "field": "opcode", "value": "0x14" }
+          ]
+        },
+        {
+          "mnemonic": "CRC32CH",
+          "function": "CRC32CH",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32CH instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x0" },
+            { "field": "opcode", "value": "0x15" }
+          ]
+        },
+        {
+          "mnemonic": "CRC32CW",
+          "function": "CRC32CW",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32CW instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x0" },
+            { "field": "opcode", "value": "0x16" }
+          ]
+        },
+        {
+          "mnemonic": "CRC32X",
+          "function": "CRC32X",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32X instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode", "value": "0x13" }
+          ]
+        },
+        {
+          "mnemonic": "CRC32CX",
+          "function": "CRC32CX",
+          "features": ["CRC32"],
+          "description": "Encodes a CRC32CX instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode", "value": "0x17" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DataProc2CSSC",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm"],
+        "getters": ["rd", "rn", "rm"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "SMAX",
+          "function": "SMAX",
+          "features": ["CSSC"],
+          "description": "Encodes a SMAX instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x18" }]
+        },
+        {
+          "mnemonic": "UMAX",
+          "function": "UMAX",
+          "features": ["CSSC"],
+          "description": "Encodes an UMAX instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x19" }]
+        },
+        {
+          "mnemonic": "SMIN",
+          "function": "SMIN",
+          "features": ["CSSC"],
+          "description": "Encodes a SMIN instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x1A" }]
+        },
+        {
+          "mnemonic": "UMIN",
+          "function": "UMIN",
+          "features": ["CSSC"],
+          "description": "Encodes an UMIN instruction",
+          "discriminators": [{ "field": "opcode", "value": "0x1B" }]
+        }
+      ]
+    }
+  ]
+}
