@@ -6,7 +6,7 @@ type ArithCarry Instruction
 
 // ADC encodes an ADD with carry instruction
 func ADC(rd, rn, rm Register) ArithCarry {
-	var i ArithCarry = 0x03400000
+	var i ArithCarry = 0x1A000000
 
 	i = setSF(i, rd, rn, rm)
 
@@ -22,7 +22,7 @@ func ADC(rd, rn, rm Register) ArithCarry {
 
 // ADCS encodes an ADD with carry (setting flags) instruction
 func ADCS(rd, rn, rm Register) ArithCarry {
-	var i ArithCarry = 0x03400000
+	var i ArithCarry = 0x1A000000
 
 	i = setSF(i, rd, rn, rm)
 
@@ -38,7 +38,7 @@ func ADCS(rd, rn, rm Register) ArithCarry {
 
 // SBC encodes a SUB with carry instruction
 func SBC(rd, rn, rm Register) ArithCarry {
-	var i ArithCarry = 0x03400000
+	var i ArithCarry = 0x1A000000
 
 	i = setSF(i, rd, rn, rm)
 
@@ -54,7 +54,7 @@ func SBC(rd, rn, rm Register) ArithCarry {
 
 // SBCS encodes a SUB with carry (setting flags) instruction
 func SBCS(rd, rn, rm Register) ArithCarry {
-	var i ArithCarry = 0x03400000
+	var i ArithCarry = 0x1A000000
 
 	i = setSF(i, rd, rn, rm)
 

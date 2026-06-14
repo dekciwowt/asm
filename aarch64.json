@@ -10,7 +10,8 @@
           { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
           { "type": "uint8", "name": "op", "size": 1, "pos": 30 },
           { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
-          { "type": "uint8", "default": "0x1A", "size": 8, "pos": 21 },
+          { "type": "uint8", "default": "0x1A", "size": 5, "pos": 24 },
+          { "type": "uint8", "default": "0x0", "size": 3, "pos": 21 },
           { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
           { "type": "uint8", "default": "0x0", "size": 6, "pos": 10 },
           { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
@@ -386,7 +387,7 @@
         "fields": [
           { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
           { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
-          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 29 },
           { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
           { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
           { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
@@ -442,6 +443,48 @@
       ]
     },
     {
+      "name": "DataProc2PAUTH",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          {
+            "type": "uint8",
+            "name": "sf",
+            "size": 1,
+            "pos": 31,
+            "autoset": false
+          },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm"],
+        "getters": ["rd", "rn", "rm"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "PACGA",
+          "function": "PACGA",
+          "features": ["PAUTH"],
+          "description": "Encodes a SUBP instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode", "value": "0xC" }
+          ]
+        }
+      ]
+    },
+    {
       "name": "DataProc2CRC32",
       "base": "Instruction",
       "encoding": {
@@ -454,7 +497,7 @@
             "autoset": false
           },
           { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
-          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 29 },
           { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
           { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
           { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
@@ -560,7 +603,7 @@
         "fields": [
           { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
           { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
-          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 29 },
           { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
           { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
           { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
@@ -604,6 +647,329 @@
           "features": ["CSSC"],
           "description": "Encodes an UMIN instruction",
           "discriminators": [{ "field": "opcode", "value": "0x1B" }]
+        }
+      ]
+    },
+    {
+      "name": "DataProc2MTE",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          {
+            "type": "uint8",
+            "name": "sf",
+            "size": 1,
+            "pos": 31,
+            "autoset": false
+          },
+          { "type": "uint8", "default": "0x0", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0x6D", "size": 8, "pos": 21 },
+          { "type": "reg", "name": "rm", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn", "rm"],
+        "getters": ["rd", "rn", "rm"],
+        "formats": [
+          {
+            "format": "%s %s, %s, %s",
+            "arguments": ["mnemonic", "rd", "rn", "rm"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "SUBP",
+          "function": "SUBP",
+          "features": ["MTE"],
+          "description": "Encodes a SUBP instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "S", "value": "0x0" },
+            { "field": "opcode", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "IRG",
+          "function": "IRG",
+          "features": ["MTE"],
+          "description": "Encodes an IRG instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "S", "value": "0x0" },
+            { "field": "opcode", "value": "0x4" }
+          ]
+        },
+        {
+          "mnemonic": "GMI",
+          "function": "GMI",
+          "features": ["MTE"],
+          "description": "Encodes a GMI instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "S", "value": "0x0" },
+            { "field": "opcode", "value": "0x5" }
+          ]
+        },
+        {
+          "mnemonic": "SUBPS",
+          "function": "SUBPS",
+          "features": ["MTE"],
+          "description": "Encodes a SUBPS instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "S", "value": "0x1" },
+            { "field": "opcode", "value": "0x0" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DataProc1",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "default": "0x1", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0xD6", "size": 8, "pos": 21 },
+          { "type": "uint8", "name": "opcode2", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn"],
+        "getters": ["rd", "rn"],
+        "formats": [
+          {
+            "format": "%s %s, %s",
+            "arguments": ["mnemonic", "rd", "rn"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "RBIT",
+          "function": "RBIT",
+          "description": "Encodes a RBIT instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "REV16",
+          "function": "REV16",
+          "description": "Encodes a REV16 instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x1" }
+          ]
+        },
+        {
+          "mnemonic": "REV",
+          "function": "REV",
+          "description": "Encodes a REV instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x2" }
+          ]
+        },
+        {
+          "mnemonic": "CLZ",
+          "function": "CLZ",
+          "description": "Encodes a CLZ instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x4" }
+          ]
+        },
+        {
+          "mnemonic": "CLS",
+          "function": "CLS",
+          "description": "Encodes a CLS instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x5" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DataProc1CSSC",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          { "type": "uint8", "name": "sf", "size": 1, "pos": 31 },
+          { "type": "uint8", "default": "0x1", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0xD6", "size": 8, "pos": 21 },
+          { "type": "uint8", "name": "opcode2", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn"],
+        "getters": ["rd", "rn"],
+        "formats": [
+          {
+            "format": "%s %s, %s",
+            "arguments": ["mnemonic", "rd", "rn"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "CTZ",
+          "function": "CTZ",
+          "features": ["CSSC"],
+          "description": "Encodes a CTZ instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x6" }
+          ]
+        },
+        {
+          "mnemonic": "CNT",
+          "function": "CNT",
+          "features": ["CSSC"],
+          "description": "Encodes a CNT instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x7" }
+          ]
+        },
+        {
+          "mnemonic": "ABS",
+          "function": "ABS",
+          "features": ["CSSC"],
+          "description": "Encodes an ABS instruction",
+          "discriminators": [
+            { "field": "opcode2", "value": "0x0" },
+            { "field": "opcode", "value": "0x8" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DataProc1PAUTH",
+      "base": "Instruction",
+      "encoding": {
+        "fields": [
+          {
+            "type": "uint8",
+            "name": "sf",
+            "size": 1,
+            "pos": 31,
+            "autoset": false
+          },
+          { "type": "uint8", "default": "0x1", "size": 1, "pos": 30 },
+          { "type": "uint8", "name": "S", "size": 1, "pos": 29 },
+          { "type": "uint8", "default": "0xD6", "size": 8, "pos": 21 },
+          { "type": "uint8", "name": "opcode2", "size": 5, "pos": 16 },
+          { "type": "uint8", "name": "opcode", "size": 6, "pos": 10 },
+          { "type": "reg", "name": "rn", "size": 5, "pos": 5 },
+          { "type": "reg", "name": "rd", "size": 5, "pos": 0 }
+        ],
+        "setters": ["rd", "rn"],
+        "getters": ["rd", "rn"],
+        "formats": [
+          {
+            "format": "%s %s, %s",
+            "arguments": ["mnemonic", "rd", "rn"]
+          }
+        ]
+      },
+      "instructions": [
+        {
+          "mnemonic": "PACIA",
+          "function": "PACIA",
+          "features": ["PAUTH"],
+          "description": "Encodes a PACIA instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x0" }
+          ]
+        },
+        {
+          "mnemonic": "PACIB",
+          "function": "PACIB",
+          "features": ["PAUTH"],
+          "description": "Encodes a PACIB instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x1" }
+          ]
+        },
+        {
+          "mnemonic": "PACDA",
+          "function": "PACDA",
+          "features": ["PAUTH"],
+          "description": "Encodes a PACDA instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x2" }
+          ]
+        },
+        {
+          "mnemonic": "PACDB",
+          "function": "PACDB",
+          "features": ["PAUTH"],
+          "description": "Encodes a PACDB instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x3" }
+          ]
+        },
+        {
+          "mnemonic": "AUTIA",
+          "function": "AUTIA",
+          "features": ["PAUTH"],
+          "description": "Encodes an AUTIA instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x4" }
+          ]
+        },
+        {
+          "mnemonic": "AUTIB",
+          "function": "AUTIB",
+          "features": ["PAUTH"],
+          "description": "Encodes an AUTIB instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x5" }
+          ]
+        },
+        {
+          "mnemonic": "AUTDA",
+          "function": "AUTDA",
+          "features": ["PAUTH"],
+          "description": "Encodes an AUTDA instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x6" }
+          ]
+        },
+        {
+          "mnemonic": "AUTDB",
+          "function": "AUTDB",
+          "features": ["PAUTH"],
+          "description": "Encodes an AUTDB instruction",
+          "discriminators": [
+            { "field": "sf", "value": "0x1" },
+            { "field": "opcode2", "value": "0x1" },
+            { "field": "opcode", "value": "0x7" }
+          ]
         }
       ]
     }
